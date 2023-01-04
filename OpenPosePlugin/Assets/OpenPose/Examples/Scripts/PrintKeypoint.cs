@@ -17,8 +17,15 @@ public class KeypointUpdater : MonoBehaviour
     // Callback function that gets called every frame with the updated keypoint data
     void OnKeypointDataReceived(OPDatum datum)
     {
+        if (datum.poseKeypoints == null || bodyIndex >= datum.poseKeypoints.GetSize(0))
+        {
+            return;
+        }
         // Update keypoints
         humanController2D.DrawHuman(ref datum, bodyIndex);
+
+        // // Print keypoint 3 position
+        // Debug.Log("Keypoint 3: (" + datum.poseKeypoints.Get(bodyIndex, 3, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, 3, 1) + ")");
     }
 
     IEnumerator Start()

@@ -5617,13 +5617,13 @@ MonoBehaviour:
   fpsText: {fileID: 360185006}
   peopleText: {fileID: 940128901}
   stateText: {fileID: 1528161358}
-  inputType: 3
-  producerString: C:\Users\kevin\Pictures\demo\ikun.mp4
+  inputType: 4
+  producerString: -1
   maxPeople: 1
-  renderThreshold: 0.05
+  renderThreshold: 0.00001
   handEnabled: 0
   faceEnabled: 0
-  netResolution: {x: -1, y: 80}
+  netResolution: {x: -1, y: 64}
   handResolution: {x: 368, y: 368}
   faceResolution: {x: 368, y: 368}
   renderBgImg: 0
