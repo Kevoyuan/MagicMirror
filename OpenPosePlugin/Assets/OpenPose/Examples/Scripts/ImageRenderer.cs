@@ -29,7 +29,7 @@ namespace OpenPose.Example
 			// Unity does not support BGR24 yet, which is the color format in OpenCV.
 			// Here we are using RGB24 as data format, then swap R and B in shader, to maintain the performance.
 			rectTransform.sizeDelta = new Vector2Int(width, height);
-			texture.Resize(width, height, TextureFormat.RGB24, false);
+			texture.Reinitialize(width, height, TextureFormat.RGB24, false);
 			texture.LoadRawTextureData(data.ToArray());
 			texture.Apply();			
 		}
