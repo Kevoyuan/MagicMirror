@@ -5617,8 +5617,8 @@ MonoBehaviour:
   fpsText: {fileID: 360185006}
   peopleText: {fileID: 940128901}
   stateText: {fileID: 1528161358}
-  inputType: 4
-  producerString: -1
+  inputType: 3
+  producerString: D:\MAR_Project\MagicMirror\model_for_test\ikun.mp4
   maxPeople: 1
   renderThreshold: 0.00001
   handEnabled: 0
