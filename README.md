@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div align="center">
     <img src=".github/Logo_main_black.png", width="300">
 </div>
@@ -96,3 +97,7 @@ Links to the papers:
 ## License
 OpenPose Unity Plugin is freely available for free non-commercial use, and may be redistributed under these conditions. Please, see the [license](LICENSE) for further details. Interested in a commercial license? Check this [FlintBox link](https://flintbox.com/public/project/47343/). For commercial queries, use the `Directly Contact Organization` section from the [FlintBox link](https://flintbox.com/public/project/47343/) and also send a copy of that message to [Yaser Sheikh](http://www.cs.cmu.edu/~yaser/).
 
+=======
+# MagicMirror
+Webcam-based Magic Mirror in Unity using OpenPose
+>>>>>>> 1ee32d5b152ac120888265ddc1d854936994da68
