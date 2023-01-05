@@ -28,7 +28,7 @@ namespace OpenPose.Example {
         public ProducerType inputType = ProducerType.Webcam;
         public string producerString = "-1";
         public int maxPeople = -1;
-        public float renderThreshold = 0.05f;
+        public float renderThreshold = 1e-5f;
         public bool
             handEnabled = false,
             faceEnabled = false;
@@ -117,7 +117,7 @@ namespace OpenPose.Example {
             OPWrapper.OPConfigureInput(
                 /* producerType */ inputType, /* producerString */ producerString,
                 /* frameFirst */ 0, /* frameStep */ 1, /* frameLast */ ulong.MaxValue,
-                /* realTimeProcessing */ false, /* frameFlip */ false,
+                /* realTimeProcessing */ false, /* frameFlip */ true,
                 /* frameRotate */ 0, /* framesRepeat */ false,
                 /* cameraResolution */ null, /* cameraParameterPath */ null,
                 /* undistortImage */ false, /* numberViews */ -1);

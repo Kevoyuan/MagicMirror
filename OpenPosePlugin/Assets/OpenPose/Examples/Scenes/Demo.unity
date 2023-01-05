@@ -4895,7 +4895,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 1c566c115aaa5854ab6394092042a4ed,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -221.5
+      value: -214.2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1c566c115aaa5854ab6394092042a4ed,
         type: 3}
@@ -5563,6 +5563,7 @@ GameObject:
   - component: {fileID: 1795921006}
   - component: {fileID: 1795921008}
   - component: {fileID: 1795921009}
+  - component: {fileID: 1795921010}
   m_Layer: 0
   m_Name: OpenPose
   m_TagString: Untagged
@@ -5626,7 +5627,7 @@ MonoBehaviour:
   netResolution: {x: -1, y: 64}
   handResolution: {x: 368, y: 368}
   faceResolution: {x: 368, y: 368}
-  renderBgImg: 0
+  renderBgImg: 1
 --- !u!114 &1795921009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5634,14 +5635,25 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1795921005}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cf377fd4a866f74689448070f297a45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  humanController2D: {fileID: 0}
   bodyIndex: 0
   keypointDataFilePath: keypoints.txt
+--- !u!114 &1795921010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1795921005}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e2d1c0590f948844a716651b8548a38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1820642227
 GameObject:
   m_ObjectHideFlags: 0

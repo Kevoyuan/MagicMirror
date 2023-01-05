@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class KeypointUpdater : MonoBehaviour
 {
-    // Reference to the HumanController2D script
-    public HumanController2D humanController2D;
-
     // Index of the body to update keypoints for 
     public int bodyIndex = 0;
 
@@ -21,11 +18,10 @@ public class KeypointUpdater : MonoBehaviour
         {
             return;
         }
-        // Update keypoints
-        humanController2D.DrawHuman(ref datum, bodyIndex);
-
-        // Print keypoint 3 position
-        // Debug.Log("Keypoint 3: (" + datum.poseKeypoints.Get(bodyIndex, 3, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, 3, 1) + ")");
+        
+        // Print keypoint 3 and 4 positions
+        Debug.Log("Keypoint 3: (" + datum.poseKeypoints.Get(bodyIndex, 3, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, 3, 1) + ")");
+        Debug.Log("Keypoint 4: (" + datum.poseKeypoints.Get(bodyIndex, 4, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, 4, 1) + ")");
     }
 
     IEnumerator Start()

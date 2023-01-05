@@ -37,7 +37,7 @@ namespace OpenPose.Example
             DrawFace(ref datum, bodyIndex, scoreThres);
             DrawRectangles(ref datum, bodyIndex);
         }
-
+        
         private void DrawBody(ref OPDatum datum, int bodyIndex, float scoreThres)
         {
             if (datum.poseKeypoints == null || bodyIndex >= datum.poseKeypoints.GetSize(0))
@@ -69,10 +69,10 @@ namespace OpenPose.Example
                     Vector3 pos = new Vector3(datum.poseKeypoints.Get(bodyIndex, part, 0), datum.poseKeypoints.Get(bodyIndex, part, 1), 0f);
                     poseJoints[part].localPosition = pos;
                     // Print the keypoint's position
-                    if (part == 3)
-                    { Debug.Log("Keypoint " + part + ": (" + datum.poseKeypoints.Get(bodyIndex, part, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, part, 1) + ")"); }
-                    if (part == 4)
-                    { Debug.Log("Keypoint " + part + ": (" + datum.poseKeypoints.Get(bodyIndex, part, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, part, 1) + ")"); }
+                    // if (part == 3)
+                    // { Debug.Log("Keypoint " + part + ": (" + datum.poseKeypoints.Get(bodyIndex, part, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, part, 1) + ")"); }
+                    // if (part == 4)
+                    // { Debug.Log("Keypoint " + part + ": (" + datum.poseKeypoints.Get(bodyIndex, part, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, part, 1) + ")"); }
                     
                 }
             }
@@ -257,6 +257,7 @@ namespace OpenPose.Example
                 }
             }
         }
+        
     }
 }
 
