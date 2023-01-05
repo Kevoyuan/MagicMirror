@@ -24,7 +24,7 @@ public class KeypointUpdater : MonoBehaviour
         // Update keypoints
         humanController2D.DrawHuman(ref datum, bodyIndex);
 
-        // // Print keypoint 3 position
+        // Print keypoint 3 position
         // Debug.Log("Keypoint 3: (" + datum.poseKeypoints.Get(bodyIndex, 3, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, 3, 1) + ")");
     }
 
