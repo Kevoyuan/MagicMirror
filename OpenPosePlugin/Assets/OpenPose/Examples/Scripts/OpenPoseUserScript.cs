@@ -159,6 +159,17 @@ namespace OpenPose.Example {
 
             // Try getting new frame
             if (OPWrapper.OPGetOutput(out datum)){ // true: has new frame data
+                // Print keypoint 3 to the console
+                int numPoses = datum.poseKeypoints.GetSize(0);
+
+                if (numPoses > 0)
+                {
+                    // Keypoint 3 is located at (0, 3, 0) and (0, 3, 1) in the poseKeypoints array
+                    float x = datum.poseKeypoints.Get(0, 3, 0);
+                    float y = datum.poseKeypoints.Get(0, 3, 0);
+                    float score = datum.poseKeypoints.Get(0, 3, 2);
+                    Debug.LogFormat("Keypoint 3: ({0}, {1}), score = {2}", x, y, score);
+                }
 
                 // Update background image
                 bgImageRenderer.UpdateImage(datum.cvInputData);
