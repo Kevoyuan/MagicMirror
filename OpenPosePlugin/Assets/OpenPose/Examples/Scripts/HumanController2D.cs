@@ -30,6 +30,14 @@ namespace OpenPose.Example
         private List<RectTransform> lHandJoints = new List<RectTransform>();
         private List<RectTransform> rHandJoints = new List<RectTransform>();
         private List<RectTransform> faceJoints = new List<RectTransform>();
+        private void Awake()
+        {
+            // Populate the poseJoints list with the children of the PoseParent game object
+            foreach (Transform child in PoseParent)
+            {
+                poseJoints.Add(child.GetComponent<RectTransform>());
+            }
+        }
 
         public void DrawHuman(ref OPDatum datum, int bodyIndex, float scoreThres = 0)
         {
