@@ -166,7 +166,7 @@ namespace OpenPose.Example {
 
                 if (numPoses > 0)
                 {
-                    // Keypoint 3 is located at (0, 3, 0) and (0, 3, 1) in the poseKeypoints array
+                    // keypointNumber is located at (0, keypointNumber, 0) and (0, keypointNumber, 1) in the poseKeypoints array
                     float x = datum.poseKeypoints.Get(0, keypointNumber, 0);
                     float y = datum.poseKeypoints.Get(0, keypointNumber, 0);
                     float score = datum.poseKeypoints.Get(0, keypointNumber, 2);
