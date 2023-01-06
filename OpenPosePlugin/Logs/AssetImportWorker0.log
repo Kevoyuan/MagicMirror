@@ -304,3 +304,133 @@ AssetImportParameters requested are different than current active one (requested
   custom:container-demuxer-webm: 4f35f7cbe854078d1ac9338744f61a02 -> 
   custom:audio-encoder-webm-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
   custom:container-muxer-webm: aa71ff27fc2769a1b78a27578f13a17b -> 
+========================================================================
+Received Prepare
+Begin MonoManager ReloadAssembly
+Duplicate assembly 'log4netPlastic.dll' with different versions detected, using 'Packages/com.unity.collab-proxy/Lib/Editor/PlasticSCM/log4netPlastic.dll, AssemblyName=log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a' and ignoring 'Assets/OpenPose/Plugins/log4net.dll, AssemblyName=log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a'.Could not load image D:\MAR_Project\MagicMirror\OpenPosePlugin\Assets\OpenPose\Plugins\SpinnakerNETd_v140.dll due to Metadata verifier doesn't handle sections with SizeOfRawData < VirtualSize
+Run the peverify utility against this for more information.
+Could not load image D:\MAR_Project\MagicMirror\OpenPosePlugin\Assets\OpenPose\Plugins\SpinnakerNET_v140.dll due to Metadata verifier doesn't handle sections with SizeOfRawData < VirtualSize
+Run the peverify utility against this for more information.
+Unloading broken assembly Assets/OpenPose/Plugins/SpinnakerNETGUId_v140.dll, this assembly can cause crashes in the runtime
+Unloading broken assembly Assets/OpenPose/Plugins/ActiproSoftware.Shared.Wpf.dll, this assembly can cause crashes in the runtime
+Unloading broken assembly Assets/OpenPose/Plugins/ActiproSoftware.Docking.Wpf.dll, this assembly can cause crashes in the runtime
+Unloading broken assembly Assets/OpenPose/Plugins/SpinnakerNETGUI_v140.dll, this assembly can cause crashes in the runtime
+- Loaded All Assemblies, in  0.606 seconds
+Refreshing native plugins compatible for Editor in 39.35 ms, found 102 plugins.
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.727 seconds
+Domain Reload Profiling:
+	ReloadAssembly (211ms)
+		BeginReloadAssembly (129ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (6ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (33ms)
+		LoadAllAssembliesAndSetupDomain (390ms)
+			LoadAssemblies (89ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (349ms)
+				TypeCache.Initialize (257ms)
+					TypeCache.ScanAssembly (252ms)
+				ResolveRequiredComponents (2ms)
+		FinalizeReload (0ms)
+			ReleaseScriptCaches (0ms)
+			RebuildScriptCaches (0ms)
+			SetupLoadedEditorAssemblies (336ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (11ms)
+				SetLoadedEditorAssemblies (6ms)
+				RefreshPlugins (0ms)
+				BeforeProcessingInitializeOnLoad (72ms)
+				ProcessInitializeOnLoadAttributes (213ms)
+				ProcessInitializeOnLoadMethodAttributes (28ms)
+				AfterProcessingInitializeOnLoad (6ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (5ms)
+Refreshing native plugins compatible for Editor in 36.77 ms, found 102 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1858 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 129 unused Assets / (100.9 KB). Loaded Objects now: 2231.
+Memory consumption went from 307.3 MB to 307.2 MB.
+Total: 2.710800 ms (FindLiveObjects: 0.144900 ms CreateObjectMapping: 0.076600 ms MarkObjects: 2.394000 ms  DeleteObjects: 0.094600 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:video-decoder-webm-vp8: 9c59270c3fd7afecdb556c50c9e8de78 -> 
+  custom:container-demuxer-ogg: 62fdf1f143b41e24485cea50d1cbac27 -> 
+  custom:AudioImporter_EditorPlatform: d09bf68614088b80899f8185d706f6e7 -> 
+  custom:video-decoder-ogg-theora: a1e56fd34408186e4bbccfd4996cb3dc -> 
+  custom:framework-win-MediaFoundation: 216162199b28c13a410421893ffa2e32 -> 
+  custom:video-encoder-webm-vp8: eb34c28f22e8b96e1ab97ce403110664 -> 
+  custom:audio-decoder-ogg-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
+  custom:container-demuxer-webm: 4f35f7cbe854078d1ac9338744f61a02 -> 
+  custom:audio-encoder-webm-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
+  custom:container-muxer-webm: aa71ff27fc2769a1b78a27578f13a17b -> 
+========================================================================
+Received Prepare
+Begin MonoManager ReloadAssembly
+Duplicate assembly 'log4netPlastic.dll' with different versions detected, using 'Packages/com.unity.collab-proxy/Lib/Editor/PlasticSCM/log4netPlastic.dll, AssemblyName=log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a' and ignoring 'Assets/OpenPose/Plugins/log4net.dll, AssemblyName=log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a'.Could not load image D:\MAR_Project\MagicMirror\OpenPosePlugin\Assets\OpenPose\Plugins\SpinnakerNETd_v140.dll due to Metadata verifier doesn't handle sections with SizeOfRawData < VirtualSize
+Run the peverify utility against this for more information.
+Could not load image D:\MAR_Project\MagicMirror\OpenPosePlugin\Assets\OpenPose\Plugins\SpinnakerNET_v140.dll due to Metadata verifier doesn't handle sections with SizeOfRawData < VirtualSize
+Run the peverify utility against this for more information.
+Unloading broken assembly Assets/OpenPose/Plugins/SpinnakerNETGUId_v140.dll, this assembly can cause crashes in the runtime
+Unloading broken assembly Assets/OpenPose/Plugins/ActiproSoftware.Shared.Wpf.dll, this assembly can cause crashes in the runtime
+Unloading broken assembly Assets/OpenPose/Plugins/ActiproSoftware.Docking.Wpf.dll, this assembly can cause crashes in the runtime
+Unloading broken assembly Assets/OpenPose/Plugins/SpinnakerNETGUI_v140.dll, this assembly can cause crashes in the runtime
+- Loaded All Assemblies, in  0.632 seconds
+Refreshing native plugins compatible for Editor in 45.67 ms, found 102 plugins.
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.918 seconds
+Domain Reload Profiling:
+	ReloadAssembly (193ms)
+		BeginReloadAssembly (121ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (8ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (35ms)
+		LoadAllAssembliesAndSetupDomain (435ms)
+			LoadAssemblies (87ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (385ms)
+				TypeCache.Initialize (285ms)
+					TypeCache.ScanAssembly (280ms)
+				ResolveRequiredComponents (4ms)
+		FinalizeReload (0ms)
+			ReleaseScriptCaches (0ms)
+			RebuildScriptCaches (0ms)
+			SetupLoadedEditorAssemblies (451ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (20ms)
+				SetLoadedEditorAssemblies (6ms)
+				RefreshPlugins (0ms)
+				BeforeProcessingInitializeOnLoad (85ms)
+				ProcessInitializeOnLoadAttributes (288ms)
+				ProcessInitializeOnLoadMethodAttributes (43ms)
+				AfterProcessingInitializeOnLoad (9ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (7ms)
+Refreshing native plugins compatible for Editor in 46.40 ms, found 102 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1858 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 129 unused Assets / (100.8 KB). Loaded Objects now: 2234.
+Memory consumption went from 307.3 MB to 307.2 MB.
+Total: 2.837000 ms (FindLiveObjects: 0.287700 ms CreateObjectMapping: 0.158600 ms MarkObjects: 2.276400 ms  DeleteObjects: 0.113600 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:video-decoder-webm-vp8: 9c59270c3fd7afecdb556c50c9e8de78 -> 
+  custom:container-demuxer-ogg: 62fdf1f143b41e24485cea50d1cbac27 -> 
+  custom:AudioImporter_EditorPlatform: d09bf68614088b80899f8185d706f6e7 -> 
+  custom:video-decoder-ogg-theora: a1e56fd34408186e4bbccfd4996cb3dc -> 
+  custom:framework-win-MediaFoundation: 216162199b28c13a410421893ffa2e32 -> 
+  custom:video-encoder-webm-vp8: eb34c28f22e8b96e1ab97ce403110664 -> 
+  custom:audio-decoder-ogg-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
+  custom:container-demuxer-webm: 4f35f7cbe854078d1ac9338744f61a02 -> 
+  custom:audio-encoder-webm-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
+  custom:container-muxer-webm: aa71ff27fc2769a1b78a27578f13a17b -> 

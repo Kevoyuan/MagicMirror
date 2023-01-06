@@ -5667,6 +5667,7 @@ MonoBehaviour:
   producerString: D:\MAR_Project\MagicMirror\model_for_test\ikun.mp4
   maxPeople: 1
   renderThreshold: 0.00001
+  keypointNumber: 4
   handEnabled: 0
   faceEnabled: 0
   netResolution: {x: -1, y: 64}

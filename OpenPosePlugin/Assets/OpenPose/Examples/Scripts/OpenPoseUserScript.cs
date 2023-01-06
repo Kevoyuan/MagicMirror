@@ -29,6 +29,8 @@ namespace OpenPose.Example {
         public string producerString = "-1";
         public int maxPeople = -1;
         public float renderThreshold = 1e-5f;
+        public int keypointNumber = 3;
+
         public bool
             handEnabled = false,
             faceEnabled = false;
@@ -165,10 +167,10 @@ namespace OpenPose.Example {
                 if (numPoses > 0)
                 {
                     // Keypoint 3 is located at (0, 3, 0) and (0, 3, 1) in the poseKeypoints array
-                    float x = datum.poseKeypoints.Get(0, 3, 0);
-                    float y = datum.poseKeypoints.Get(0, 3, 0);
-                    float score = datum.poseKeypoints.Get(0, 3, 2);
-                    Debug.LogFormat("Keypoint 3: ({0}, {1}), score = {2}", x, y, score);
+                    float x = datum.poseKeypoints.Get(0, keypointNumber, 0);
+                    float y = datum.poseKeypoints.Get(0, keypointNumber, 0);
+                    float score = datum.poseKeypoints.Get(0, keypointNumber, 2);
+                    Debug.LogFormat("Keypoint {0}: ({1}, {2}), score = {3}", keypointNumber, x, y, score);
                 }
 
                 // Update background image
