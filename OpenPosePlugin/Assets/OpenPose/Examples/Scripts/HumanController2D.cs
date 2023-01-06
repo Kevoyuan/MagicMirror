@@ -72,8 +72,6 @@ namespace OpenPose.Example
                     Vector3 pos = new Vector3(datum.poseKeypoints.Get(bodyIndex, part, 0), datum.poseKeypoints.Get(bodyIndex, part, 1), 0f);
                     poseJoints[part].localPosition = pos;
    
-
-
                 }
             }
         }
