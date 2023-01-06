@@ -1,1 +1,2 @@
-OpenPosePlugin\Assets\OpenPose\Examples\Media\
+OpenPosePlugin/
+!OpenPosePlugin\Assets\OpenPose\Examples\Scripts\OpenPoseUserScript.cs

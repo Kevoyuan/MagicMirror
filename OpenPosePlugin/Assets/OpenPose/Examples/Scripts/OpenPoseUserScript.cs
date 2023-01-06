@@ -29,7 +29,7 @@ namespace OpenPose.Example {
         public string producerString = "-1";
         public int maxPeople = -1;
         public float renderThreshold = 1e-5f;
-        public int keypointNumber = 3;
+        public int keypointNumber = 4;
 
         public bool
             handEnabled = false,
