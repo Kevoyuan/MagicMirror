@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace OpenPose.Example
 {
@@ -68,12 +69,18 @@ namespace OpenPose.Example
                     poseJoints[part].gameObject.SetActive(true);
                     Vector3 pos = new Vector3(datum.poseKeypoints.Get(bodyIndex, part, 0), datum.poseKeypoints.Get(bodyIndex, part, 1), 0f);
                     poseJoints[part].localPosition = pos;
-                    // Print the keypoint's position
-                    // if (part == 3)
-                    // { Debug.Log("Keypoint " + part + ": (" + datum.poseKeypoints.Get(bodyIndex, part, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, part, 1) + ")"); }
-                    // if (part == 4)
-                    // { Debug.Log("Keypoint " + part + ": (" + datum.poseKeypoints.Get(bodyIndex, part, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, part, 1) + ")"); }
-                    
+                    // Print keypoints 3 and 4
+                    if (part == 3 || part == 4)
+                    {
+                        Debug.Log("Keypoint " + part + ": (" + datum.poseKeypoints.Get(bodyIndex, part, 0) + ", " + datum.poseKeypoints.Get(bodyIndex, part, 1) + ")");
+                        Image image = poseJoints[part].GetComponent<Image>();
+                        if (image != null)
+                        {
+                            image.color = Color.red;
+                        }
+                    }
+
+
                 }
             }
         }
