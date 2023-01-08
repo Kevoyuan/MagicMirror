@@ -61,4 +61,8 @@ Corridor/Library/metadata/
 /Assets/StreamingAssets/models/face/pose_iter_116000.caffemodel
 /Assets/StreamingAssets/models/face/pose_iter_116000.caffemodel.meta
 /Assets/StreamingAssets/models/hand/pose_iter_102000.caffemodel
+<<<<<<< HEAD
 /Assets/StreamingAssets/models/hand/pose_iter_102000.caffemodel.meta
+=======
+/Assets/StreamingAssets/models/hand/pose_iter_102000.caffemodel.meta
+>>>>>>> 647d0674b2fd379940f75ebab3690b222eef61fd
