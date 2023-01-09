@@ -143,6 +143,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   endPoint1: {x: 286, y: 286, z: 0}
   endPoint2: {x: 355, y: 355, z: 0}
+  humanPrefab: {fileID: 0}
+  keypointNumber1: 3
+  keypointNumber2: 4
 --- !u!114 &4617419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4960,17 +4963,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 1c566c115aaa5854ab6394092042a4ed,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 106077.01
+      value: 107416
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1c566c115aaa5854ab6394092042a4ed,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 106077.01
+      value: 107416
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1c566c115aaa5854ab6394092042a4ed,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 106077.01
+      value: 107416
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1c566c115aaa5854ab6394092042a4ed,
         type: 3}
@@ -5707,7 +5710,7 @@ MonoBehaviour:
   stateText: {fileID: 1528161358}
   inputType: 3
   producerString: D:\MAR_Project\MagicMirror\model_for_test\ikun.mp4
-  maxPeople: 1
+  maxPeople: -771
   renderThreshold: 0.00001
   keypointNumber: 4
   handEnabled: 0

@@ -30,7 +30,7 @@ namespace OpenPose.Example {
         public int maxPeople = -1;
         public float renderThreshold = 1e-5f;
 
-        public int keypointNumber = 4;
+        // public int keypointNumber = 4;
 
         public bool
             handEnabled = false,
@@ -164,16 +164,16 @@ namespace OpenPose.Example {
             if (OPWrapper.OPGetOutput(out datum)){ // true: has new frame data
                 // Print keypoint 3 to the console
                 
-                int numPoses = datum.poseKeypoints.GetSize(0);
+                // int numPoses = datum.poseKeypoints.GetSize(0);
 
-                if (numPoses > 0)
-                {
-                    // keypointNumber is located at (0, keypointNumber, 0) and (0, keypointNumber, 1) in the poseKeypoints array
-                    float x = datum.poseKeypoints.Get(0, keypointNumber, 0);
-                    float y = datum.poseKeypoints.Get(0, keypointNumber, 0);
-                    float score = datum.poseKeypoints.Get(0, keypointNumber, 2);
-                    Debug.LogFormat("Keypoint {0}: ({1}, {2}), score = {3}", keypointNumber, x, y, score);
-                }
+                // if (numPoses > 0)
+                // {
+                //     // keypointNumber is located at (0, keypointNumber, 0) and (0, keypointNumber, 1) in the poseKeypoints array
+                //     float x = datum.poseKeypoints.Get(0, keypointNumber, 0);
+                //     float y = datum.poseKeypoints.Get(0, keypointNumber, 0);
+                //     float score = datum.poseKeypoints.Get(0, keypointNumber, 2);
+                //     Debug.LogFormat("Keypoint {0}: ({1}, {2}), score = {3}", keypointNumber, x, y, score);
+                // }
                 
                 // Update background image
                 bgImageRenderer.UpdateImage(datum.cvInputData);
