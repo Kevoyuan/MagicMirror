@@ -12,6 +12,8 @@ public class MeshPoseCalculator : MonoBehaviour
     public int keypointNumber2 = 4;
     private Vector3 endPoint1;
     private Vector3 endPoint2;
+    private MeshRenderer _mr;
+    private MeshRenderer MeshRenderer { get { if (!_mr) _mr = GetComponent<MeshRenderer>(); return _mr; } }
 
     private void Update()
     {
@@ -42,6 +44,12 @@ public class MeshPoseCalculator : MonoBehaviour
 
                 Joint0.anchoredPosition = endPoint1;
                 Joint1.anchoredPosition = endPoint2;
+
+                if (Joint0 && Joint1) {
+                MeshRenderer.enabled = Joint0.gameObject.activeInHierarchy && Joint1.gameObject.activeInHierarchy;
+                transform.position = Vector3.Lerp(Joint0.localPosition, Joint1.localPosition, 0.5f);
+                }
+                
 
             }
         }
