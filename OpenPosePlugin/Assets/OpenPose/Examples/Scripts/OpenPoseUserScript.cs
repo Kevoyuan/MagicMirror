@@ -29,6 +29,7 @@ namespace OpenPose.Example {
         public string producerString = "-1";
         public int maxPeople = -1;
         public float renderThreshold = 1e-5f;
+
         public int keypointNumber = 4;
 
         public bool
@@ -162,6 +163,7 @@ namespace OpenPose.Example {
             // Try getting new frame
             if (OPWrapper.OPGetOutput(out datum)){ // true: has new frame data
                 // Print keypoint 3 to the console
+                
                 int numPoses = datum.poseKeypoints.GetSize(0);
 
                 if (numPoses > 0)
@@ -172,7 +174,7 @@ namespace OpenPose.Example {
                     float score = datum.poseKeypoints.Get(0, keypointNumber, 2);
                     Debug.LogFormat("Keypoint {0}: ({1}, {2}), score = {3}", keypointNumber, x, y, score);
                 }
-
+                
                 // Update background image
                 bgImageRenderer.UpdateImage(datum.cvInputData);
 
