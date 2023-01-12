@@ -19,8 +19,8 @@ Use the OpenPose plugin to detect keypoints on the human body, and use these key
 You can customize the skeleton and the look of your magic mirror as per your preference.
 
 # Note
--This project is just an demonstration of how OpenPose Unity plugin can be used in a webcam-based application. You can use the same plugin in various other applications as well.
--OpenPose is a real-time multi-person system to jointly detect human body, hand, facial, and foot keypoints (in total 135 keypoints) on single images.
+- This project is just an demonstration of how OpenPose Unity plugin can be used in a webcam-based application. You can use the same plugin in various other applications as well.
+- OpenPose is a real-time multi-person system to jointly detect human body, hand, facial, and foot keypoints (in total 135 keypoints) on single images.
 
 # Prerequisites
 Unity software
