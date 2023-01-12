@@ -1,6 +1,9 @@
 # Webcam-based Magic Mirror in Unity using OpenPose
 This project demonstrates the use of the OpenPose Unity plugin to create a webcam-based "Magic Mirror" application in Unity. The application uses the webcam to capture video and the OpenPose plugin to detect keypoints on the human body. These keypoints are then used to map a skeleton onto the video, creating an interactive "augmented reality" experience.
 
+![demo](https://github.com/Kevoyuan/MagicMirror/blob/master/ikun_demo.gif)
+
+
 # Getting Started
 First, you will need to download and install Unity. You can find the latest version on the Unity website (https://unity.com/).
 
