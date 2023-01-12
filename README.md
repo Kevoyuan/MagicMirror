@@ -29,9 +29,11 @@ OpenPose Unity plugin
 The OpenPose team for developing the OpenPose library and Unity plugin.
 The Unity team for creating the Unity game engine.
 More Information
+
 OpenPose website: https://github.com/CMU-Perceptual-Computing-Lab/openpose
+
 Unity website: https://unity.com/
-Licence
+# Licence
 This project is licensed under the MIT License - see the LICENSE.md file for details.
 
 
