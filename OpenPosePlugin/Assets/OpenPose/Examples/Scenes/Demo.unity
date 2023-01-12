@@ -136,14 +136,11 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4617414}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6e06169f268718a4f81fb5b145acc160, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  endPoint1: {x: 0, y: 0, z: 0}
-  endPoint2: {x: 0, y: 0, z: 0}
-  humanPrefab: {fileID: 0}
   keypointNumber1: 3
   keypointNumber2: 4
 --- !u!114 &4617422

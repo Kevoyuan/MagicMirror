@@ -1,3 +1,10 @@
 
 !/OpenPosePlugin/Assets/OpenPose/Examples/Scripts/OpenPoseUserScript.cs
 
+*.blend
+*.blend1
+
+*.log
+*.dwlt
+
+OpenPosePlugin/Assets/OpenPose
