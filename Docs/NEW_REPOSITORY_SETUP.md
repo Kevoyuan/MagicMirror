@@ -13,7 +13,7 @@ to complete the migration.**
 From a machine with Git (macOS, Linux, Windows Git Bash):
 
 ```bash
-git clone --branch feature/magicmirror-2.0-clean-migration --single-branch \
+git clone --depth 1 --branch feature/magicmirror-2.0-clean-migration --single-branch \
   https://github.com/Kevoyuan/MagicMirror.git
 cd MagicMirror
 bash scripts/create_standalone_repo.sh ../MagicMirror-2.0
