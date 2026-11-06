@@ -1,5 +1,6 @@
 using System.IO;
 using MagicMirror.Tracking;
+using MagicMirror.Motion;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -82,6 +83,27 @@ namespace MagicMirror.Editor
             var receiver = new GameObject("Local Pose Stream Receiver")
                 .AddComponent<PoseStreamReceiver>();
             receiver.Configure(image, statusText, overlayObject.GetComponent<PoseOverlayRenderer>());
+
+            // 2D elbow angle estimate: useful debug signal before anatomy
+            // FBX meshes, camera calibration, and 3D compositing are ready.
+            var anglesObject = new GameObject("Arm Angle Readout", typeof(RectTransform), typeof(Text));
+            anglesObject.transform.SetParent(canvasObject.transform, false);
+            var anglesRect = anglesObject.GetComponent<RectTransform>();
+            anglesRect.anchorMin = new Vector2(0, 0);
+            anglesRect.anchorMax = new Vector2(1, 0);
+            anglesRect.pivot = new Vector2(0.5f, 0);
+            anglesRect.anchoredPosition = new Vector2(0, 16);
+            anglesRect.sizeDelta = new Vector2(-32, 44);
+            var anglesText = anglesObject.GetComponent<Text>();
+            anglesText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            anglesText.fontSize = 18;
+            anglesText.alignment = TextAnchor.MiddleLeft;
+            anglesText.color = new Color(0.45f, 0.94f, 0.90f, 1f);
+            anglesText.text = "Elbow: waiting for pose...";
+            anglesText.raycastTarget = false;
+
+            var presenter = new GameObject("Arm Angle Presenter").AddComponent<ArmAnglePresenter>();
+            presenter.Configure(receiver, anglesText);
 
             Directory.CreateDirectory("Assets/Scenes");
             if (!EditorSceneManager.SaveScene(scene, ScenePath))
