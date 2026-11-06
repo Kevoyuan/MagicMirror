@@ -1,27 +1,25 @@
-name: Foundation checks
+name: Foundation and standalone repository checks
 
 on:
   push:
     paths:
       - 'Unity/**'
+      - 'Tools/**'
       - 'Assets-Manifest/**'
       - 'Docs/**'
       - 'README.md'
-      - 'README_V2.md'
-      - 'README_ANATOMY_IMPORT.md'
-      - 'Tools/pose_sidecar/**'
-      - 'Tools/ci/**'
+      - '.gitignore'
+      - 'scripts/**'
       - '.github/workflows/foundation-check.yml'
   pull_request:
     paths:
       - 'Unity/**'
+      - 'Tools/**'
       - 'Assets-Manifest/**'
       - 'Docs/**'
       - 'README.md'
-      - 'README_V2.md'
-      - 'README_ANATOMY_IMPORT.md'
-      - 'Tools/pose_sidecar/**'
-      - 'Tools/ci/**'
+      - '.gitignore'
+      - 'scripts/**'
       - '.github/workflows/foundation-check.yml'
 
 jobs:
@@ -29,17 +27,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate manifest and project scaffold
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate Unity project and asset manifest
         run: |
-          python3 -m json.tool Unity/Packages/manifest.json >/dev/null
-          python3 -m json.tool Assets-Manifest/asset_sources.json >/dev/null
+          python -m json.tool Unity/Packages/manifest.json >/dev/null
+          python -m json.tool Assets-Manifest/asset_sources.json >/dev/null
           test -s Unity/ProjectSettings/ProjectVersion.txt
-          test -s Unity/Assets/Scripts/Camera/WebcamPreviewController.cs
-          test -s Unity/Assets/Editor/Phase0SceneBuilder.cs
+          test -s Unity/Assets/Scripts/Tracking/PoseStreamReceiver.cs
+          test -s Unity/Assets/Scripts/Motion/FullBodyAtlasRetargeter.cs
           grep -q '6000.3.27f2' Unity/ProjectSettings/ProjectVersion.txt
-      - name: Assert active runtime is MediaPipe-only
+      - name: Run repository hygiene unit tests
+        run: python -m unittest discover -s Tools/ci/tests -v
+      - name: Assert no legacy pose engine or bundled historical assets
         run: |
-          python3 -m unittest discover -s Tools/ci/tests -v
-          python3 Tools/ci/check_mediapipe_only.py
-      - name: Manual editor validation pending
-        run: echo "This workflow does not compile Unity C# or test webcam hardware."
+          python Tools/ci/check_mediapipe_only.py
+          python Tools/ci/check_clean_repo.py
+      - name: Scope disclaimer
+        run: echo 'Static source hygiene only. No Unity Editor or webcam validation occurs here.'
