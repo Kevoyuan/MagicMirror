@@ -1,0 +1,28 @@
+name: Unity C# syntax parsing
+
+on:
+  push:
+    paths:
+      - 'Unity/Assets/**'
+      - 'Tools/ci/check_csharp_syntax.py'
+      - '.github/workflows/csharp-syntax.yml'
+  pull_request:
+    paths:
+      - 'Unity/Assets/**'
+      - 'Tools/ci/check_csharp_syntax.py'
+      - '.github/workflows/csharp-syntax.yml'
+
+jobs:
+  tree-sitter-parse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned C# parsing grammars
+        run: python -m pip install tree-sitter==0.26.0 tree-sitter-c-sharp==0.23.5
+      - name: Parse all new Unity C# code for syntax errors
+        run: python Tools/ci/check_csharp_syntax.py
+      - name: State test scope
+        run: echo 'Syntax-only. Does not resolve Unity APIs or run the editor.'

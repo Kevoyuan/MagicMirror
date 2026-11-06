@@ -96,7 +96,8 @@ namespace MagicMirror.Motion
             }
 
             atlasContainer = new GameObject("Full Atlas: " + profile.name);
-            atlasContainer.transform.SetParent(transform, false);
+            // World-space root avoids accidental double scaling/rotation from the
+            // retargeter scene GameObject. The imported atlas hierarchy is preserved.
             atlasContainer.transform.localPosition = Vector3.zero;
             atlasContainer.transform.localRotation = Quaternion.identity;
             atlasContainer.transform.localScale = Vector3.one;
@@ -238,10 +239,11 @@ namespace MagicMirror.Motion
             {
                 foreach (string path in group.rendererRootPaths)
                 {
-                    Transform branch = atlasRoot.Find(path);
-                    if (branch == null)
+                    Transform branch;
+                    string problem;
+                    if (!AtlasHierarchyPath.TryResolve(atlasRoot, path, out branch, out problem))
                     {
-                        Debug.LogWarning("Atlas binding path not found: " + path);
+                        Debug.LogWarning("Atlas binding path rejected: " + problem);
                         continue;
                     }
                     var renderers = branch.GetComponentsInChildren<Renderer>(true);
@@ -325,27 +327,32 @@ namespace MagicMirror.Motion
 
             Vector3 restLeft = atlasRoot.TransformPoint(profile.atlasLeftShoulderLocal);
             Vector3 restRight = atlasRoot.TransformPoint(profile.atlasRightShoulderLocal);
-            float referenceWidth = Vector3.Distance(restLeft, restRight);
-            float currentWidth = Vector3.Distance(currentLeft, currentRight);
-            if (referenceWidth < 1e-6f || currentWidth < 1e-6f)
+            AtlasRegistrationMath.Solution alignment;
+            Quaternion anatomicalOrientation = anatomyCamera.transform.rotation *
+                                               Quaternion.Euler(profile.atlasToCameraEuler);
+            if (!AtlasRegistrationMath.TrySolve(
+                restLeft, restRight, currentLeft, currentRight,
+                anatomicalOrientation, out alignment))
             {
                 atlasContainer.SetActive(false);
                 hasPose = false;
                 return;
             }
 
-            float uniformScale = currentWidth / referenceWidth;
-            Quaternion targetRotation = anatomyCamera.transform.rotation *
-                                        Quaternion.Euler(profile.atlasToCameraEuler);
-            Vector3 restShoulderMid = (restLeft + restRight) * 0.5f;
-            Vector3 trackedMid = (currentLeft + currentRight) * 0.5f;
-            Vector3 targetPosition = trackedMid -
-                                     targetRotation * (restShoulderMid * uniformScale);
+            // Prevent a suddenly invalid shoulder width from exploding the
+            // original atlas. These are safety bounds, not anthropometry.
+            if (alignment.scale < 0.001f || alignment.scale > 1000f)
+            {
+                atlasContainer.SetActive(false);
+                hasPose = false;
+                return;
+            }
 
-            // Deterministic root snap for the first validation milestone.
-            // Add a separately validated temporal filter after baseline tests.
-            atlasContainer.transform.SetPositionAndRotation(targetPosition, targetRotation);
-            atlasContainer.transform.localScale = Vector3.one * uniformScale;
+            // Both shoulders must register to the same source-space pair.
+            // This is a planar similarity fit; we still cannot infer true depth.
+            atlasContainer.transform.SetPositionAndRotation(
+                alignment.position, alignment.rotation);
+            atlasContainer.transform.localScale = Vector3.one * alignment.scale;
 
             solved.Clear();
             foreach (var group in profile.groups)

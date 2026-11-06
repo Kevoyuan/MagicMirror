@@ -149,10 +149,11 @@ namespace MagicMirror.Anatomy
             {
                 foreach (string path in group.rendererRootPaths)
                 {
-                    Transform branch = root.Find(path);
-                    if (branch == null)
+                    Transform branch;
+                    string issue;
+                    if (!AtlasHierarchyPath.TryResolve(root, path, out branch, out issue))
                     {
-                        error = group.segment + ": missing path in complete atlas: " + path;
+                        error = group.segment + ": " + issue;
                         return false;
                     }
                     if (branch.GetComponentInChildren<MeshRenderer>(true) == null)

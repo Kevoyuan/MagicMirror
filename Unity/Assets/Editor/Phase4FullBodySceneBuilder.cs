@@ -36,9 +36,8 @@ namespace MagicMirror.Editor
 
         public static void CreateScene(FullBodyAtlasProfile profile)
         {
-            string validation = "No atlas profile";
-            if (profile == null || !profile.Validate(out validation) ||
-                !profile.ValidateHierarchy(out validation))
+            string validation;
+            if (profile == null || !profile.Validate(out validation))
             {
                 EditorUtility.DisplayDialog("Atlas profile is incomplete",
                     validation ?? "No atlas profile", "OK");
@@ -94,28 +93,6 @@ namespace MagicMirror.Editor
             var retargeter = new GameObject("Non-destructive Whole-Atlas Retargeter")
                 .AddComponent<FullBodyAtlasRetargeter>();
             retargeter.Configure(receiver, anatomyCamera, profile);
-
-            var canvas = GameObject.Find("MagicMirror AR Canvas");
-            if (canvas != null)
-            {
-                var hint = new GameObject("Full Body Focus Help",
-                    typeof(RectTransform), typeof(Text));
-                hint.transform.SetParent(canvas.transform, false);
-                var rect = hint.GetComponent<RectTransform>();
-                rect.anchorMin = new Vector2(1f, 1f);
-                rect.anchorMax = new Vector2(1f, 1f);
-                rect.pivot = new Vector2(1f, 1f);
-                rect.anchoredPosition = new Vector2(-20f, -74f);
-                rect.sizeDelta = new Vector2(500f, 32f);
-
-                var label = hint.GetComponent<Text>();
-                label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                label.fontSize = 17;
-                label.alignment = TextAnchor.MiddleRight;
-                label.color = new Color(0.66f, 0.93f, 1f, 1f);
-                label.raycastTarget = false;
-                label.text = "FOCUS: 1 ALL  |  2 UPPER  |  3 ARMS  |  4 LEGS";
-            }
 
             GameObject label = GameObject.Find("Scientific Disclaimer");
             if (label != null)
@@ -205,7 +182,7 @@ namespace MagicMirror.Editor
                         atlasStartLocal = start,
                         atlasEndLocal = end,
                         rendererRootPaths = new List<string> {
-                            "Segments/" + segment
+                            AtlasHierarchyPath.RelativePath(root.transform, groupRoot.transform)
                         },
                         reviewed = false // synthetic demo does not require anatomy verification
                     });
