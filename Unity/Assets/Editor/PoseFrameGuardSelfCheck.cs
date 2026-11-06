@@ -40,13 +40,15 @@ namespace MagicMirror.Editor
             // the new session.
             Require(guard.TryAccept(2, GoodFrame(0, 10)),
                     "accept restarted producer sequence in a new session");
-            Require(guard.AcceptedCount == 4 && guard.RejectedCount == 4,
+            Require(!guard.TryAccept(1, GoodFrame(4, 2000)),
+                    "reject an old connection after new session started");
+            Require(guard.AcceptedCount == 4 && guard.RejectedCount == 5,
                     "diagnostic counters");
             guard.Reset();
             Require(guard.AcceptedCount == 0 && guard.RejectedCount == 0,
                     "reset clears counters");
 
-            Debug.Log("MagicMirror Pose Frame Integrity Self Check: PASSED (8 checks). "
+            Debug.Log("MagicMirror Pose Frame Integrity Self Check: PASSED (11 checks). "
                 + "This is Editor protocol logic, NOT a live-camera frame-sync test.");
         }
 
