@@ -6,7 +6,10 @@ on:
       - 'Unity/**'
       - 'Assets-Manifest/**'
       - 'Docs/**'
+      - 'README.md'
+      - 'README_ANATOMY_IMPORT.md'
       - 'README_V2.md'
+      - 'Tools/ci/**'
       - '.github/workflows/foundation-check.yml'
   pull_request:
     paths:
@@ -29,5 +32,9 @@ jobs:
           test -s Unity/Assets/Scripts/Camera/WebcamPreviewController.cs
           test -s Unity/Assets/Editor/Phase0SceneBuilder.cs
           grep -q '6000.3.27f2' Unity/ProjectSettings/ProjectVersion.txt
+      - name: Assert active runtime is MediaPipe-only
+        run: |
+          python3 -m unittest discover -s Tools/ci/tests -v
+          python3 Tools/ci/check_mediapipe_only.py
       - name: Manual editor validation pending
         run: echo "This workflow does not compile Unity C# or test webcam hardware."
