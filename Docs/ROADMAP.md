@@ -1,7 +1,7 @@
 # MagicMirror 2.0 — Delivery Roadmap (v2.1)
 
 **Last revised:** 2026-11-06.  
-**Current baseline:** `feature/magicmirror-2.0-atlas-calibration` / Phase 4B source committed; core Unity Editor and real-camera validations **not yet executed**. This roadmap is a target, **not** a list of shipped features.
+**Current baseline:** a clean standalone MediaPipe-only source snapshot derived from the prior Phase 4B/M1/M2 development branches. Core Unity Editor and real-camera validations **not yet executed**. This roadmap is a target, **not** a list of shipped features.
 
 ## Critical path and exit gates
 
@@ -21,13 +21,13 @@
 ## Current M0 implementation checklist
 
 - [x] Document ADR-001: MediaPipe is the only active pose tracker.
-- [x] Preserve OpenPose legacy directory without relying on it.
+- [x] Exclude the historical OpenPose project entirely from the standalone source tree.
 - [x] Deprecate the independent six-FBX extraction documentation.
 - [x] Define PoseFrame v1 and future breaking-change policy.
 - [x] Unify vision, architecture, roadmap and README navigation.
 - [x] Add active-tree guard and its unit tests to CI.
 - [ ] **On-device proof** that the Unity project runs without installing OpenPose (carried into M2).
-- [ ] Validate the CI run on the actual branch/PR rather than assuming the script passes.
+- [ ] Verify CI on the independent new GitHub repository after publishing (the staging branch CI alone does not prove the destination's checks).
 
 ## Next engineering sprint (M1/M2, ordered)
 
