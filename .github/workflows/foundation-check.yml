@@ -7,8 +7,9 @@ on:
       - 'Assets-Manifest/**'
       - 'Docs/**'
       - 'README.md'
-      - 'README_ANATOMY_IMPORT.md'
       - 'README_V2.md'
+      - 'README_ANATOMY_IMPORT.md'
+      - 'Tools/pose_sidecar/**'
       - 'Tools/ci/**'
       - '.github/workflows/foundation-check.yml'
   pull_request:
@@ -16,7 +17,11 @@ on:
       - 'Unity/**'
       - 'Assets-Manifest/**'
       - 'Docs/**'
+      - 'README.md'
       - 'README_V2.md'
+      - 'README_ANATOMY_IMPORT.md'
+      - 'Tools/pose_sidecar/**'
+      - 'Tools/ci/**'
       - '.github/workflows/foundation-check.yml'
 
 jobs:
