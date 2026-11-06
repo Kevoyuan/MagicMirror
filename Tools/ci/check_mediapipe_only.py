@@ -1,7 +1,8 @@
 """Guard the MagicMirror 2.0 *active* runtime against legacy pose dependencies.
 
-This intentionally does not inspect historical OpenPosePlugin/ sources or archived
-documentation. Static grep is a guardrail, not evidence of Unity runtime success.
+Only the active 2.0 source and Unity packages are scanned. Historical
+OpenPose code is excluded from the standalone repository entirely.
+Static grep is a guardrail, not evidence of Unity runtime success.
 Run at repository root: python3 Tools/ci/check_mediapipe_only.py
 """
 from __future__ import annotations
@@ -60,7 +61,7 @@ def main() -> int:
             print(" -", problem)
         return 1
     print("PASS: active Unity/sidecar/Unity-package paths have no legacy tracker references.")
-    print("Note: archived OpenPosePlugin/ is intentionally excluded; Unity Editor validation remains pending.")
+    print("The historical OpenPose code is not present in this standalone source tree; Unity Editor validation remains pending.")
     return 0
 
 
