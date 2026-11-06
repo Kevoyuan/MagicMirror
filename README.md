@@ -45,6 +45,20 @@ python3 -m Tools.pose_sidecar.main --demo --demo-scenario wave
 
 The default `--demo` is a standard-library-only black-background landmark stream; it listens on localhost port 8765 until stopped. It does not require MediaPipe or a webcam.
 
+## Offline end-to-end Python Sidecar validation
+
+Even if Unity is not installed, the Python test suite can launch the **actual
+sidecar server** on `127.0.0.1`, read its TCP packets, disconnect, and
+reconnect to verify a fresh frame sequence. This is stronger than packet
+serialization-only tests, but still does not exercise the Unity receiver:
+
+```bash
+python3 -m unittest Tools.pose_sidecar.tests.test_sidecar_integration -v
+```
+
+With OpenCV installed, the same integration test also checks a genuine JPEG
+stream from the synthetic-video mode.
+
 ## Same-frame synthetic video + landmark preview
 
 Install only OpenCV and NumPy, then stream synchronized example imagery and MediaPipe-format landmarks to Unity:
