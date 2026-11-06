@@ -1,0 +1,26 @@
+name: Pose sidecar protocol tests
+
+on:
+  push:
+    paths:
+      - 'Tools/pose_sidecar/**'
+      - '.github/workflows/pose-sidecar-tests.yml'
+  pull_request:
+    paths:
+      - 'Tools/pose_sidecar/**'
+      - '.github/workflows/pose-sidecar-tests.yml'
+
+jobs:
+  python-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile Python code
+        run: python -m compileall -q Tools/pose_sidecar
+      - name: Run self-contained framing/demo tests
+        run: python -m unittest discover -s Tools/pose_sidecar/tests -v
+      - name: Explain limitations
+        run: echo 'MediaPipe inference, Unity C# compilation and camera runtime are NOT tested here.'
