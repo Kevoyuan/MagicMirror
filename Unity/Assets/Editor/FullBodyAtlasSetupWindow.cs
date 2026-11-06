@@ -15,8 +15,19 @@ namespace MagicMirror.Editor
     /// </summary>
     public sealed class FullBodyAtlasSetupWindow : EditorWindow
     {
+        private const string PinnedAtlasPath =
+            "Assets/ThirdParty/ZAnatomy/SkeletalSystem100.fbx";
+
         private GameObject sourcePrefab;
         private FullBodyAtlasProfile profile;
+
+        private void OnEnable()
+        {
+            // The developer downloads ONE intact pinned source FBX locally.
+            // Unity imports it normally; no scene mesh reconstruction needed.
+            if (sourcePrefab == null)
+                sourcePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PinnedAtlasPath);
+        }
 
         [Serializable]
         private sealed class InventoryEntry
@@ -59,6 +70,17 @@ namespace MagicMirror.Editor
                 "Original whole-body FBX", sourcePrefab, typeof(GameObject), false);
             profile = (FullBodyAtlasProfile)EditorGUILayout.ObjectField(
                 "Atlas Profile", profile, typeof(FullBodyAtlasProfile), false);
+
+            if (sourcePrefab == null)
+            {
+                EditorGUILayout.HelpBox(
+                    "Pinned atlas not found. From repository root run: " +
+                    "python3 -m Tools.anatomy_tools.fetch_atlas --download. " +
+                    "Unity will import the entire 41 MB FBX as one model.",
+                    MessageType.Info);
+                if (GUILayout.Button("Re-scan Pinned Whole Atlas"))
+                    sourcePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PinnedAtlasPath);
+            }
 
             using (new EditorGUI.DisabledScope(sourcePrefab == null))
             {

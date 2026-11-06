@@ -1,0 +1,4 @@
+# Local upstream anatomical atlas FBX; downloaded per developer, not vendored.
+*.fbx
+*.fbx.meta
+*.part

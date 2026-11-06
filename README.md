@@ -23,6 +23,7 @@ MagicMirror 2.0 is a new Unity-based anatomical *illustration* prototype. The in
 | Full FBX hierarchy inventory/profile wizard | Added | Editor and asset review pending |
 | Full-body schematic test scene generator | Added | Unity Editor pending |
 | Full-body motion smoothing, dropout hold and outlier gating | Added | Unity self-check pending |
+| Pinned full Z-Anatomy FBX downloader and hash verification | Added | Python unit tests; actual download pending |
 | Atlas hierarchy overlap/missing-path validation | Added | Unity self-check pending |
 | Full / Upper / Arms / Legs focus modes | Added | Unity AR scene pending |
 | Four deterministic synthetic movement scenarios | Added | Python CI tests |
@@ -51,6 +52,15 @@ Choose:
 The demo preview has a BLACK background because it deliberately does not stream a synthetic camera image. To display real video, install the MediaPipe sidecar dependencies and obtain the Google-hosted pose model separately, as documented in `Docs/PHASE_1_SETUP.md`.
 
 **Phase 4 test scenarios:** run `python3 -m Tools.pose_sidecar.main --demo --demo-scenario walk` (or `wave`, `squat`, `dropout`). The Unity Editor menu `MagicMirror > Validation > Full Body Stability & Hierarchy Self Check` exercises pose smoothing and source hierarchy guards without any camera or real atlas. This Editor test is **not yet executed**.
+
+**One-command pinned full-atlas asset setup (optional, requires internet):**
+
+```bash
+python3 -m Tools.anatomy_tools.fetch_atlas --download
+python3 -m Tools.anatomy_tools.fetch_atlas --verify-only
+```
+
+The 41 MB FBX is fetched from the original Z-Anatomy repository at a pinned commit, checksum-verified, stored locally under Unity/Assets/ThirdParty/ZAnatomy, and gitignored. No bone extraction or redistributable mesh asset is included in this branch. **The actual download/import has not yet been run.**
 
 **Preferred model workflow:** Import ONE original full `SkeletalSystem100.fbx`; preserve all anatomical positions and source child objects. Use `MagicMirror > Phase 4 > Full Atlas Setup` to create a non-destructive motion profile and an FBX hierarchy report. **No individual bone FBX extraction is required.** See `Docs/PHASE_4_FULL_ATLAS.md`.
 

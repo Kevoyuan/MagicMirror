@@ -136,3 +136,26 @@ When the Phase 4 scene is running, the development keyboard shortcuts are **1 = 
 - [ ] Body focus controls hide only the intended regions; Full restores all originally enabled renderers.
 - [ ] Import the WHOLE Z-Anatomy FBX and verify all reviewed paths; refuse incomplete/overlapping mappings.
 - [ ] Test body orientation, shoulder width calibration, side mirror conventions and FPS with a real webcam.
+
+## Reproducible acquisition of the ONE complete official skeletal FBX
+
+The verified upstream Z-Anatomy Unity archive has a 41,339,660-byte SkeletalSystem100.fbx. For reproducibility, the local setup tool pins the immutable upstream commit:
+
+- Repository: https://github.com/LluisV/Z-Anatomy
+- Commit: 6c7f9016bd5899ac8edafd31b9900c151df42ed6
+- Git blob SHA-1: 7c62e45211bf3992bb7239170343e06e2b073865
+- FBX path at upstream commit: Resources/Models/FBX/SkeletalSystem100.fbx
+- Intended local Unity destination: Unity/Assets/ThirdParty/ZAnatomy/SkeletalSystem100.fbx
+
+Run from the MagicMirror repository root, when the developer is ready to import the full source model:
+
+~~~bash
+python3 -m Tools.anatomy_tools.fetch_atlas --download
+python3 -m Tools.anatomy_tools.fetch_atlas --verify-only
+~~~
+
+The downloader verifies the exact Git blob SHA-1 and size before atomically exposing the file to Unity; if a local file already exists and is mismatched, it stops instead of overwriting it. This command does NOT split or convert the FBX. The large third-party model remains excluded from Git by Unity/Assets/ThirdParty/ZAnatomy/.gitignore.
+
+After Unity imports the model, open **MagicMirror > Phase 4 > Full Atlas Setup**. The window detects the pinned local skeletal FBX automatically and offers a rescan button.
+
+Important: GitHub Actions tests only the *download/verification code* with synthetic byte streams; the 41 MB download and real FBX were not downloaded or imported as part of this commit. Z-Anatomy and BodyParts3D attribution and mesh-specific license review are still mandatory before redistribution.
