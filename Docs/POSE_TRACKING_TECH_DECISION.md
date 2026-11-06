@@ -1,3 +1,5 @@
+> **Historical implementation rationale, still applicable where consistent with ADR-001.** The authoritative 2.0 decision is [ADR-001 MediaPipe-only](ADR-001_MEDIAPIPE_ONLY.md); no OpenPose fallback or alternative active pose provider is supported. See the versioned [PoseFrame v1 contract](POSE_FRAME_CONTRACT.md).
+
 # Decision: Python MediaPipe sidecar for Phase 1
 
 Date: 2026-11-06
