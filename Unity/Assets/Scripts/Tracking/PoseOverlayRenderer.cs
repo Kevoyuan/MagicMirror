@@ -61,6 +61,24 @@ namespace MagicMirror.Tracking
             return rect;
         }
 
+        /// <summary>
+        /// Immediately clear all debug markers after sidecar disconnect or
+        /// prolonged stream silence. Also resets smoothing so the next pose
+        /// cannot interpolate from an unrelated person's old landmarks.
+        /// </summary>
+        public void Clear()
+        {
+            VisibleLandmarkCount = 0;
+            for (int i = 0; i < joints.Count; i++)
+            {
+                joints[i].gameObject.SetActive(false);
+                wasVisible[i] = false;
+                visible[i] = false;
+            }
+            foreach (RectTransform edge in edges)
+                edge.gameObject.SetActive(false);
+        }
+
         public void Render(PoseFrame frame, bool mirrorX)
         {
             if (canvasRect == null) canvasRect = GetComponent<RectTransform>();
