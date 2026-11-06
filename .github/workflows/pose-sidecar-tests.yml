@@ -35,7 +35,7 @@ jobs:
       - name: Install only image codec dependencies (NO MediaPipe)
         run: python -m pip install "opencv-python-headless>=4.10,<5" "numpy>=1.26,<3"
       - name: Test actual synthetic JPEG encoding and decode
-        run: python -m unittest Tools.pose_sidecar.tests.test_demo_video_opencv -v
+        run: python -m unittest Tools.pose_sidecar.tests.test_demo_video_opencv Tools.pose_sidecar.tests.test_sidecar_integration -v
       - name: State limitations
         run: echo 'This verifies synthetic image bytes, NOT a Unity renderer or physical camera.'
 
