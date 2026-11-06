@@ -13,13 +13,13 @@
 
 ## Quickest demonstration
 
-\`\`\`bash
+```bash
 python3 -m Tools.pose_sidecar.main --demo
-\`\`\`
+```
 
-In Unity Hub, open \`Unity/\` and use \`MagicMirror > Phase 1 > Create Pose Tracking Scene\`. Run generated scene with Play. The preview will be black (no synthetic camera image), with moving skeleton points and edges.
+In Unity Hub, open `Unity/` and use `MagicMirror > Phase 1 > Create Pose Tracking Scene`. Run generated scene with Play. The preview will be black (no synthetic camera image), with moving skeleton points and edges.
 
-For a real camera, see \`Docs/PHASE_1_SETUP.md\`. This feature branch does not contain model weights, third-party anatomical FBXs, or a finished AR/X-Ray mode.
+For a real camera, see `Docs/PHASE_1_SETUP.md`. This feature branch does not contain model weights, third-party anatomical FBXs, or a finished AR/X-Ray mode.
 
 The old Phase 0 scene remains separate. **Do not attach Phase 0 and Phase 1 camera controllers to the same scene.**
 

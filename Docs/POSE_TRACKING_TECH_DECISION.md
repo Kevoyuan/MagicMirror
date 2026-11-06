@@ -8,10 +8,10 @@ Use a Python MediaPipe Tasks Pose Landmarker process as a local camera-and-pose 
 
 ## Why
 
-- The existing Unity OpenPose plugin is old and calls a native \`openpose\` library.
+- The existing Unity OpenPose plugin is old and calls a native `openpose` library.
 - Unity package / OS-specific MediaPipe native plugin compatibility is not yet verified.
 - A *single* Python camera owner gives an unambiguous, same-frame pair of image and pose data; it avoids concurrent webcam contention.
-- The Unity side owns frame presentation and overlay; future anatomy retargeting remains C# and engine-independent via an explicit \`PoseFrame\` model.
+- The Unity side owns frame presentation and overlay; future anatomy retargeting remains C# and engine-independent via an explicit `PoseFrame` model.
 - A deterministic no-camera demo lets us test integration without a model, GPU or physical machine.
 - MediaPipe VIDEO mode accepts sequential monotonic timestamps and returns 33 normalized and world landmarks. It does not guarantee physically calibrated internal anatomy.
 
