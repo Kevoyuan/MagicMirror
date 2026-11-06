@@ -4,7 +4,7 @@
 
 ## Setup
 
-- Branch: `feature/magicmirror-2.0-mediapipe-only-m0` (or later branch carrying these changes)
+- Source: standalone `MagicMirror-2.0` `main` once published, or the clean migration staging branch before publication.
 - Editor: version pinned in `Unity/ProjectSettings/ProjectVersion.txt` (currently `6000.3.27f2`).
 - Open **`Unity/`** as the project root, not `OpenPosePlugin/`.
 - Confirm no OpenPose native library, OpenPose Unity package, separate BODY_25 service or second camera controller is needed.
