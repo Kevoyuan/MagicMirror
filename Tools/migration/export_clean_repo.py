@@ -45,6 +45,7 @@ CANONICAL_DOCS = (
 )
 # Old individual-bone importer is superseded by intact FBX + atlas binding.
 EXCLUDED_PATHS = {
+    ".github/workflows/export-magicmirror-2.yml",
     "Unity/Assets/Editor/AnatomyArmImportWindow.cs",
     "Unity/Assets/Scripts/Anatomy/AnatomicalArmMap.cs",
 }
