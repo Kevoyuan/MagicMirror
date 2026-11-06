@@ -1,47 +1,80 @@
-# Webcam-based Magic Mirror in Unity using OpenPose
-This project demonstrates the use of the OpenPose Unity plugin to create a webcam-based "Magic Mirror" application in Unity. The application uses the webcam to capture video and the OpenPose plugin to detect keypoints on the human body. These keypoints are then used to map a skeleton onto the video, creating an interactive "augmented reality" experience.
+# MagicMirror 2.0 — Interactive Anatomical AR Mirror
 
-<div align="center">
-  <img src="https://github.com/Kevoyuan/MagicMirror/blob/master/ikun_demo.gif" width="300" height="auto" title="Sing_Dance_Rap_Basketball.gif">
-</div>
+**Vision:** Explore human anatomy by moving your own body in front of an ordinary webcam.
 
+MagicMirror 2.0 is a new Unity-based anatomical *illustration* prototype. The intended experience is **A: mirror overlay**, where reference bones, muscles and organs are registered to the live image of the same user—not a separate character, face filter or clinical scanner.
 
+> **Development status (2026-11):** source implementation up to a **schematic arm X-ray preview**. Unity Editor, physical webcam, camera/model registration and actual Z-Anatomy FBX integration remain **unverified**. This is **not a completed AR application or medical imaging tool**.
 
-# Getting Started
-First, you will need to download and install Unity. You can find the latest version on the Unity website (https://unity.com/).
+## What's implemented in the development branch?
 
-Next, you will need to download and import the OpenPose Unity plugin into your Unity project. You can find the plugin on OpenPose Unity Plugin https://github.com/CMU-Perceptual-Computing-Lab/openpose_unity_plugin.
+| Module | Source status | Runtime verification |
+| --- | --- | --- |
+| Unity 6.3 LTS clean project scaffold | Added | Pending |
+| Phase 0 webcam preview scene generator | Added | Pending |
+| Phase 1 MediaPipe Pose Landmarker Python sidecar | Added | Python protocol tests passing; actual inference pending |
+| Same-frame local JPEG + 33-keypoint TCP protocol | Added | Python tests passing; Unity integration pending |
+| Unity mirrored webcam and pose debug overlay | Added | Pending |
+| Left/right elbow angle estimates | Added | Unity self-check pending |
+| Phase 3 transparent anatomy RenderTexture | Added | Pending |
+| Schematic humerus/radius/ulna AR proxies | Added | Pending |
+| Z-Anatomy FBX metadata inventory tooling | Added | Python name-hint tests; Blender import pending |
+| Actual anatomical FBX bones + accurate calibration | **Not done** | Not applicable |
 
-Once the plugin is imported, you can create a new scene and add a webcam texture to a quad.
+## Quickest simulation (without camera or ML packages)
 
-Use the OpenPose plugin to detect keypoints on the human body, and use these keypoints to map a skeleton onto the video.
+From the repository root:
 
-You can customize the skeleton and the look of your magic mirror as per your preference.
+```bash
+python3 -m Tools.pose_sidecar.main --demo
+```
 
-# Note
-- This project is just an demonstration of how OpenPose Unity plugin can be used in a webcam-based application. You can use the same plugin in various other applications as well.
-- OpenPose is a real-time multi-person system to jointly detect human body, hand, facial, and foot keypoints (in total 135 keypoints) on single images.
+In **Unity Hub**, open the **`Unity/`** folder with the pinned editor version from `Unity/ProjectSettings/ProjectVersion.txt`.
 
-# Prerequisites
-Unity software
-OpenPose Unity plugin
-A webcam
-Built With
-Unity
-OpenPose Unity plugin
+Choose:
 
+1. **MagicMirror > Validation > Pose Math Self Check**
+2. **MagicMirror > Phase 3 > Create Arm X-Ray Preview Scene**
+3. Open the generated `Assets/Scenes/Phase3ArmXRayPreview.unity`
+4. Enter **Play** and look for schematic bone capsules over the moving synthetic skeleton.
+5. Adjust **BONE OPACITY** slider to test AR alpha compositing.
 
-# Acknowledgments
-The OpenPose team for developing the OpenPose library and Unity plugin.
-The Unity team for creating the Unity game engine.
-More Information
+The demo preview has a BLACK background because it deliberately does not stream a synthetic camera image. To display real video, install the MediaPipe sidecar dependencies and obtain the Google-hosted pose model separately, as documented in `Docs/PHASE_1_SETUP.md`.
 
-OpenPose website: https://github.com/CMU-Perceptual-Computing-Lab/openpose
+## Architecture
 
-Unity website: https://unity.com/
-# Licence
-This project is licensed under the MIT License - see the LICENSE.md file for details.
+```text
+Webcam (Python sidecar) -> MediaPipe 33-keypoint pose + JPEG
+           |                     |
+           +-------localhost TCP-+
+                                 |
+                       Unity PoseStreamReceiver
+                          /              \
+                    Video RawImage    ArmPoseMath
+                          |              |
+                          |         Anatomical retargeters
+                          |              |
+                          |        Offscreen Camera -> alpha RenderTexture
+                          |                      |
+                          +---------- uGUI AR Overlay
+```
 
+## Source and documentation
 
+- `Docs/ARCHITECTURE.md` — module design
+- `Docs/ROADMAP.md` — milestone plan
+- `Docs/PHASE_0_SETUP.md`, `Docs/PHASE_1_SETUP.md` — setup
+- `Docs/PHASE_2_ARM_FOUNDATION.md` — interim retargeter
+- `Docs/PHASE_3_AR_COMPOSITING.md` — current compositing stage, coordinate contract and model workflow
+- `Docs/PHASE_3_TEST_CASES.md` — manual acceptance tests
+- `Docs/ASSETS_AND_LICENSES.md` — third-party provenance and licensing
+- `Docs/LEGACY_README_2023.md` — original project's README, preserved for reference
 
+## Reference anatomy and legacy project
 
+- Original 2023 OpenPose demo sources remain unchanged under `OpenPosePlugin/`.
+- Future anatomical reference assets: https://github.com/Z-Anatomy/Models-of-human-anatomy
+- Unity FBX anatomy sources: https://github.com/LluisV/Z-Anatomy/tree/PC-Version/Resources/Models/FBX
+- Z-Anatomy assets are NOT included in this development branch. Source-specific licenses and mesh identities must be reviewed before redistribution or animation.
+
+**Scientific limitation:** pose estimation and reference anatomical registration are illustrations only. No part of this project sees into a person's body, measures individual organs, or makes a medical diagnosis.

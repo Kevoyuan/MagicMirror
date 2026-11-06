@@ -3,12 +3,6 @@ using UnityEngine;
 
 namespace MagicMirror.Tracking
 {
-    /// <summary>
-    /// Version 1 of MagicMirror's LOCAL TCP sidecar protocol.
-    /// Image-space points are normalized and refer to the UNMIRRORED
-    /// source image unless the mirrored flag is explicitly true.
-    /// World points, if present, are estimates (not calibrated camera depth).
-    /// </summary>
     [Serializable]
     public sealed class PoseLandmark
     {
@@ -19,6 +13,12 @@ namespace MagicMirror.Tracking
         public float presence;
     }
 
+    /// <summary>
+    /// Version 1 of localhost pose packet. Pose and JPEG describe the SAME
+    /// source camera frame; normalized image coordinates originate at top-left.
+    /// "mirrored" describes SOURCE image orientation, not rendered display.
+    /// Estimated 3D world landmarks are not calibrated internal anatomy.
+    /// </summary>
     [Serializable]
     public sealed class PoseFrame
     {
@@ -37,19 +37,25 @@ namespace MagicMirror.Tracking
             get
             {
                 return version == 1 && width > 0 && height > 0 &&
-                       landmarks != null && (landmarks.Length == 0 || landmarks.Length == 33);
+                       landmarks != null &&
+                       (landmarks.Length == 0 || landmarks.Length == 33);
             }
         }
 
-        public bool TryGetVisible(int index, float minConfidence, out PoseLandmark point)
+        public bool TryGetVisible(int index, float minimumConfidence, out PoseLandmark point)
         {
             point = null;
-            if (landmarks == null || index < 0 || index >= landmarks.Length)
+            if (!IsValid || index < 0 || index >= landmarks.Length)
                 return false;
-            var candidate = landmarks[index];
+
+            PoseLandmark candidate = landmarks[index];
             if (candidate == null || !Finite(candidate.x) || !Finite(candidate.y) ||
-                candidate.visibility < minConfidence || candidate.presence < minConfidence)
+                !Finite(candidate.z) || !Finite(candidate.visibility) ||
+                !Finite(candidate.presence) ||
+                candidate.visibility < minimumConfidence ||
+                candidate.presence < minimumConfidence)
                 return false;
+
             point = candidate;
             return true;
         }

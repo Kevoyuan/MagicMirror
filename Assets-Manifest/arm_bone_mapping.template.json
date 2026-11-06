@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "description": "Template for manually verified mesh-to-anatomical-bone correspondence. All endpoint values MUST be measured inside the actual imported Unity bone root local space; null means unverified.",
+  "source": {
+    "sourceUrl": "https://github.com/LluisV/Z-Anatomy/tree/PC-Version/Resources/Models/FBX",
+    "originalArchive": "SkeletalSystem100.fbx",
+    "assetRevision": null,
+    "licenseReviewed": false,
+    "authorAttributions": [
+      "Z-Anatomy",
+      "BodyParts3D"
+    ]
+  },
+  "bones": [
+    {
+      "side": "right",
+      "anatomicalName": "Humerus",
+      "sourceObjectName": null,
+      "unityAssetPath": null,
+      "localStart": null,
+      "localEnd": null,
+      "verified": false
+    },
+    {
+      "side": "right",
+      "anatomicalName": "Radius",
+      "sourceObjectName": null,
+      "unityAssetPath": null,
+      "localStart": null,
+      "localEnd": null,
+      "verified": false
+    },
+    {
+      "side": "right",
+      "anatomicalName": "Ulna",
+      "sourceObjectName": null,
+      "unityAssetPath": null,
+      "localStart": null,
+      "localEnd": null,
+      "verified": false
+    },
+    {
+      "side": "left",
+      "anatomicalName": "Humerus",
+      "sourceObjectName": null,
+      "unityAssetPath": null,
+      "localStart": null,
+      "localEnd": null,
+      "verified": false
+    },
+    {
+      "side": "left",
+      "anatomicalName": "Radius",
+      "sourceObjectName": null,
+      "unityAssetPath": null,
+      "localStart": null,
+      "localEnd": null,
+      "verified": false
+    },
+    {
+      "side": "left",
+      "anatomicalName": "Ulna",
+      "sourceObjectName": null,
+      "unityAssetPath": null,
+      "localStart": null,
+      "localEnd": null,
+      "verified": false
+    }
+  ]
+}
