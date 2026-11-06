@@ -29,6 +29,12 @@ The header and JPEG are one indivisible logical packet. The Unity worker may rep
 
 Each landmark is `{x,y,z,visibility,presence}` with finite numeric fields. MediaPipe's landmark order is used unchanged. `visibility` and `presence` help quality gating; they do not establish anatomical accuracy.
 
+## Unity transport integrity rules (M2)
+
+The receiver accepts complete header+JPEG packets via the latest-only queue, and rejects duplicate, reordered, or non-monotonic `frameId`/`timestampMs` pairs **within one connection**. The locally assigned TCP session number advances on reconnect; the producer may restart from frame zero. An older connection cannot replace a newer one.
+
+**A non-demo frame with empty JPEG bytes must be rejected** to prevent new pose landmarks from being drawn on old camera video. Only `demo=true` may have an empty JPEG. When the stream stalls, Unity clears old debug dots and blacks out the old video after its configurable timeout. This addresses *freshness*, not absolute end-to-end display latency.
+
 ## Coordinate and timing rules
 
 - Normalized image `x` increases from **image left to right**, `y` from **top to bottom**, in the UNMIRRORED source-camera image. These are image coordinates, not Unity world positions.
