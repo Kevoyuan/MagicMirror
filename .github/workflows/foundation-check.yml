@@ -1,0 +1,33 @@
+name: Foundation checks
+
+on:
+  push:
+    paths:
+      - 'Unity/**'
+      - 'Assets-Manifest/**'
+      - 'Docs/**'
+      - 'README_V2.md'
+      - '.github/workflows/foundation-check.yml'
+  pull_request:
+    paths:
+      - 'Unity/**'
+      - 'Assets-Manifest/**'
+      - 'Docs/**'
+      - 'README_V2.md'
+      - '.github/workflows/foundation-check.yml'
+
+jobs:
+  check-scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate manifest and project scaffold
+        run: |
+          python3 -m json.tool Unity/Packages/manifest.json >/dev/null
+          python3 -m json.tool Assets-Manifest/asset_sources.json >/dev/null
+          test -s Unity/ProjectSettings/ProjectVersion.txt
+          test -s Unity/Assets/Scripts/Camera/WebcamPreviewController.cs
+          test -s Unity/Assets/Editor/Phase0SceneBuilder.cs
+          grep -q '6000.3.27f2' Unity/ProjectSettings/ProjectVersion.txt
+      - name: Manual editor validation pending
+        run: echo "This workflow does not compile Unity C# or test webcam hardware."

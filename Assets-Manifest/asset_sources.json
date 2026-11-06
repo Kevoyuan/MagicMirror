@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "generatedDate": "2026-11-06",
+  "notes": "Third-party models are not included in this branch. The license on each source mesh must be audited before packaging.",
+  "sourceProjects": [
+    {
+      "name": "MagicMirror legacy",
+      "url": "https://github.com/Kevoyuan/MagicMirror",
+      "role": "reference implementation only"
+    },
+    {
+      "name": "Z-Anatomy Blender models",
+      "url": "https://github.com/Z-Anatomy/Models-of-human-anatomy",
+      "licenseDeclared": "CC BY-SA 4.0 with additional asset-specific license concerns"
+    },
+    {
+      "name": "Z-Anatomy Unity models",
+      "url": "https://github.com/LluisV/Z-Anatomy/tree/PC-Version/Resources/Models/FBX",
+      "licenseDeclared": "review source-specific terms"
+    }
+  ],
+  "models": [
+    {
+      "file": "SkeletalSystem100.fbx",
+      "bytes": 41339660,
+      "neededFor": "phase-2",
+      "licenseStatus": "pending-review",
+      "distributed": false
+    },
+    {
+      "file": "Joints100.fbx",
+      "bytes": 9804796,
+      "neededFor": "phase-2",
+      "licenseStatus": "pending-review",
+      "distributed": false
+    },
+    {
+      "file": "MuscularSystem100.fbx",
+      "bytes": 37343180,
+      "neededFor": "phase-5",
+      "licenseStatus": "pending-review",
+      "distributed": false
+    },
+    {
+      "file": "VisceralSystem100.fbx",
+      "bytes": 18401708,
+      "neededFor": "phase-5",
+      "licenseStatus": "pending-review",
+      "distributed": false
+    }
+  ]
+}
