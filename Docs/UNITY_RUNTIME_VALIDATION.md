@@ -50,6 +50,19 @@ In Unity, execute:
 
 Pass means **no C# compilation exceptions, no crashes, expected skeletal behavior and clean exit**. Record Unity Console logs and screenshots.
 
+## Gate A2 — aligned synthetic video (new)
+
+After the dependency-free black demo, test **video + landmarks together**, still without a webcam or MediaPipe model:
+
+~~~bash
+python3 -m pip install "opencv-python>=4.10,<5" "numpy>=1.26,<3"
+python3 -m Tools.pose_sidecar.main --demo-video --demo-scenario walk
+~~~
+
+Run Unity Phase 1 Pose Tracking Scene and compare the moving **source-image marker locations** with Unity debug landmark positions; both must follow the same source frame when mirrored. Watch the source frame counter advance. Stop the sidecar: by default after ~0.75 seconds of silence the preview should turn black and debug points disappear. Restart: a fresh TCP session must accept frame IDs starting at zero. Run `--demo` after `--demo-video` and verify old JPEG frames are no longer displayed.
+
+Execute `MagicMirror > Validation > Pose Frame Integrity Self Check` (or the full batch runner) to check duplicate/out-of-order frames, timestamps and reconnect behavior in actual Unity Editor. These tests are synthetic; see `Docs/M2_FRAME_INTEGRITY_AND_DEMO_VIDEO.md`.
+
 ## Gate B — real camera and sidecar
 
 Use `Docs/PHASE_1_SETUP.md` for a Python 3.11 environment and the model bundle. With a single webcam owner:
