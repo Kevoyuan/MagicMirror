@@ -204,6 +204,23 @@ namespace MagicMirror.Tracking
                 return;
             }
 
+            // Missing JPEG in a real-camera packet would overlay a NEW pose
+            // onto the PREVIOUS camera image. Only --demo may omit image bytes.
+            if (!frame.demo && current.jpeg.Length == 0)
+            {
+                Debug.LogWarning("MagicMirror rejected camera pose with missing JPEG.");
+                ClearExpiredPreview();
+                return;
+            }
+
+            if (frame.demo && current.jpeg.Length == 0)
+            {
+                // Disconnecting real camera and switching to the synthetic
+                // source must not leave a stale webcam image behind.
+                previewImage.texture = null;
+                previewImage.color = Color.black;
+            }
+
             if (current.jpeg.Length > 0)
             {
                 if (previewTexture == null)
