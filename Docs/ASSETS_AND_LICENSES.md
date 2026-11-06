@@ -2,11 +2,11 @@
 
 **As of 2026-11-06.** This is an engineering inventory, not legal advice.
 
-## Existing prototype
+## Historical project and standalone code license
 
-- MagicMirror original OpenPose Unity prototype: https://github.com/Kevoyuan/MagicMirror
-- Unity project directory `OpenPosePlugin/` is preserved. Review the OpenPose library/plugin licenses separately before a redistribution or commercial release.
-- Older README references an MIT license, but no comprehensive license grant for all third-party dependencies should be inferred from that note.
+- Original historical MagicMirror prototype: https://github.com/Kevoyuan/MagicMirror . Its OpenPose plugin sources and bundled media are **excluded** from the standalone MagicMirror 2.0 source tree.
+- The repository owner must choose an explicit license for this **new project's original source code**. Do not infer a grant from an older README or from public repository visibility.
+- No OpenPose dependency or model binary is redistributed with the clean source snapshot.
 
 ## Z-Anatomy resources
 
@@ -16,7 +16,7 @@
 - Attribution includes **BodyParts3D — CC BY-SA 2.1 Japan** where applicable.
 - Z-Anatomy's README also lists source-specific materials with **CC BY-NC-SA 4.0** and **CC BY-NC 4.0** restrictions (e.g. particular inner-ear/kidney models). Content must be audited at the mesh/asset level; assuming the entire collection is uniformly redistributable is unsafe.
 - Attribution, share-alike, transformation records and other license obligations must be preserved for applicable assets.
-- The first Unity branch contains **no copied Z-Anatomy FBX files**.
+- The standalone MagicMirror 2.0 source snapshot contains **no copied Z-Anatomy FBX files**.
 
 ## Model sources planned for evaluation
 
