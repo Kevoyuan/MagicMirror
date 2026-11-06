@@ -24,6 +24,7 @@ namespace MagicMirror.Tracking
         [SerializeField] private Text statusText;
         [SerializeField] private PoseOverlayRenderer poseOverlay;
         [SerializeField] private int port = 8765;
+        [SerializeField, Min(0.1f)] private float staleAfterSeconds = 0.75f;
 
         private readonly object gate = new object();
         private Thread worker;
@@ -32,11 +33,16 @@ namespace MagicMirror.Tracking
         private FrameBytes pendingFrame;
         private string pendingStatus;
         private Texture2D previewTexture;
+        private readonly PoseFrameGuard frameGuard = new PoseFrameGuard();
+        private int sessionCounter;
+        private float lastFreshFrameAt = -100f;
+        private bool streamStale = true;
 
         private sealed class FrameBytes
         {
             public string header;
             public byte[] jpeg;
+            public int sessionId;
         }
 
         public event Action<PoseFrame> FrameReceived;
@@ -60,6 +66,9 @@ namespace MagicMirror.Tracking
             // WebCamTexture controller, avoiding double-opening a USB camera.
             previewImage.color = Color.black;
             previewImage.uvRect = new Rect(1f, 0f, -1f, 1f);
+            frameGuard.Reset();
+            streamStale = true;
+            lastFreshFrameAt = -100f;
             running = true;
             pendingStatus = "Waiting for Pose Sidecar on 127.0.0.1:" + port + " ...";
             worker = new Thread(ReceiveLoop) { IsBackground = true, Name = "MagicMirrorPoseReader" };
@@ -76,6 +85,7 @@ namespace MagicMirror.Tracking
                     lock (gate) activeClient = client;
                     client.NoDelay = true;
                     client.Connect(IPAddress.Loopback, port);
+                    int currentSession = Interlocked.Increment(ref sessionCounter);
                     SetStatusFromWorker("Connected to Pose Sidecar.");
 
                     using (NetworkStream stream = client.GetStream())
@@ -86,7 +96,12 @@ namespace MagicMirror.Tracking
                             string header = Encoding.UTF8.GetString(ReadExact(stream, headerBytes));
                             int jpegBytes = ReadLength(stream, MaxJpegBytes);
                             byte[] jpeg = ReadExact(stream, jpegBytes);
-                            lock (gate) pendingFrame = new FrameBytes { header = header, jpeg = jpeg };
+                            lock (gate) pendingFrame = new FrameBytes
+                            {
+                                header = header,
+                                jpeg = jpeg,
+                                sessionId = currentSession
+                            };
                         }
                     }
                 }
@@ -159,7 +174,11 @@ namespace MagicMirror.Tracking
             if (!string.IsNullOrEmpty(message) && statusText != null)
                 statusText.text = message;
 
-            if (current == null) return;
+            if (current == null)
+            {
+                ClearExpiredPreview();
+                return;
+            }
 
             PoseFrame frame;
             try
@@ -169,13 +188,37 @@ namespace MagicMirror.Tracking
             catch (Exception error)
             {
                 Debug.LogWarning("MagicMirror rejected malformed pose JSON: " + error.Message);
+                ClearExpiredPreview();
                 return;
             }
 
-            if (frame == null || !frame.IsValid)
+            if (!frameGuard.TryAccept(current.sessionId, frame))
             {
-                Debug.LogWarning("MagicMirror rejected invalid or mismatched pose packet.");
+                // Reject out-of-order packets BEFORE touching image, skeleton or
+                // retargeters. A new TCP session allows IDs to restart at zero.
+                if (frameGuard.RejectedCount <= 3 ||
+                    frameGuard.RejectedCount % 60 == 0)
+                    Debug.LogWarning("MagicMirror rejected invalid/duplicate/out-of-order "
+                        + "pose packet. Rejections: " + frameGuard.RejectedCount);
+                ClearExpiredPreview();
                 return;
+            }
+
+            // Missing JPEG in a real-camera packet would overlay a NEW pose
+            // onto the PREVIOUS camera image. Only --demo may omit image bytes.
+            if (!frame.demo && current.jpeg.Length == 0)
+            {
+                Debug.LogWarning("MagicMirror rejected camera pose with missing JPEG.");
+                ClearExpiredPreview();
+                return;
+            }
+
+            if (frame.demo && current.jpeg.Length == 0)
+            {
+                // Disconnecting real camera and switching to the synthetic
+                // source must not leave a stale webcam image behind.
+                previewImage.texture = null;
+                previewImage.color = Color.black;
             }
 
             if (current.jpeg.Length > 0)
@@ -183,7 +226,10 @@ namespace MagicMirror.Tracking
                 if (previewTexture == null)
                     previewTexture = new Texture2D(2, 2, TextureFormat.RGB24, false);
                 if (!previewTexture.LoadImage(current.jpeg, false))
+                {
+                    ClearExpiredPreview();
                     return;
+                }
 
                 previewImage.texture = previewTexture;
                 previewImage.color = Color.white;
@@ -199,13 +245,37 @@ namespace MagicMirror.Tracking
             if (fitter != null) fitter.aspectRatio = (float)frame.width / frame.height;
 
             poseOverlay.Render(frame, horizontalMirror);
+            lastFreshFrameAt = Time.realtimeSinceStartup;
+            streamStale = false;
             if (statusText != null)
+            {
+                string modelInfo = string.IsNullOrEmpty(frame.modelProfile)
+                    ? "" : " | " + frame.modelProfile +
+                      " inference " + frame.inferenceMs.ToString("F1") + "ms";
                 statusText.text = (frame.demo ? "DEMO" : "MEDIAPIPE") +
                                   " | frame " + frame.frameId +
                                   " | visible points " +
-                                  poseOverlay.VisibleLandmarkCount;
+                                  poseOverlay.VisibleLandmarkCount +
+                                  " | rejected " + frameGuard.RejectedCount +
+                                  modelInfo;
+            }
 
             FrameReceived?.Invoke(frame);
+        }
+
+        private void ClearExpiredPreview()
+        {
+            if (streamStale ||
+                Time.realtimeSinceStartup - lastFreshFrameAt <= staleAfterSeconds)
+                return;
+
+            streamStale = true;
+            if (poseOverlay != null)
+                poseOverlay.Clear();
+            if (previewImage != null)
+                previewImage.color = Color.black;
+            if (statusText != null)
+                statusText.text = "Pose stream stale — waiting for fresh frame.";
         }
 
         private void OnDisable() { Stop(); }
@@ -233,6 +303,11 @@ namespace MagicMirror.Tracking
             if (previewTexture != null)
                 Destroy(previewTexture);
             previewTexture = null;
+            if (poseOverlay != null)
+                poseOverlay.Clear();
+            frameGuard.Reset();
+            streamStale = true;
+            lastFreshFrameAt = -100f;
         }
     }
 }

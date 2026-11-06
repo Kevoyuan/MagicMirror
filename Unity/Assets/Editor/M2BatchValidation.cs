@@ -31,8 +31,10 @@ namespace MagicMirror.Editor
                 FullBodyStabilitySelfCheck.Execute();
                 current = "atlas registration and paths";
                 AtlasRegistrationSelfCheck.Run();
+                current = "pose frame sequencing";
+                PoseFrameGuardSelfCheck.Run();
 
-                Debug.Log("MAGICMIRROR_M2_BATCH_PASS — four synthetic Editor suites. "
+                Debug.Log("MAGICMIRROR_M2_BATCH_PASS — five synthetic Editor suites. "
                     + "Physical camera, real FBX, visual alignment and FPS NOT verified.");
                 EditorApplication.Exit(0);
             }

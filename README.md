@@ -38,6 +38,17 @@ MagicMirror 2.0 is a new Unity-based anatomical *illustration* prototype. The in
 | Z-Anatomy FBX metadata inventory tooling | Added | Python name-hint tests; Blender import pending |
 | Actual anatomical FBX bones + accurate calibration | **Not done** | Not applicable |
 
+## M2: same-frame synthetic JPEG + pose validation
+
+To test **real image/pose compositing in Unity** without a webcam or MediaPipe model, use `--demo-video` (requires only OpenCV/NumPy):
+
+~~~bash
+python3 -m pip install "opencv-python>=4.10,<5" "numpy>=1.26,<3"
+python3 -m Tools.pose_sidecar.main --demo-video --demo-scenario wave
+~~~
+
+The image shows a frame counter and synthetic joint reference dots; the Unity pose overlay should follow them. The new PoseFrameGuard rejects reordered frames, and missing/stalled streams clear the old overlay. **This is a synthetic test only, not proof of real webcam or 3D anatomy alignment.** See [M2 frame integrity validation](Docs/M2_FRAME_INTEGRITY_AND_DEMO_VIDEO.md).
+
 ## Quickest simulation (without camera or ML packages)
 
 From the repository root:

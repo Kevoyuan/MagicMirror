@@ -60,7 +60,7 @@ def serialize_landmark(lm: object) -> dict[str, float]:
     }
 
 
-def demo_packets(fps: int, scenario: str = "wave"):
+def demo_packets(fps: int, scenario: str = "wave", *, image_encoder=None):
     period = 1.0 / fps
     start = time.monotonic()
     frame_id = 0
@@ -69,11 +69,15 @@ def demo_packets(fps: int, scenario: str = "wave"):
         now = time.monotonic()
         timestamp_ms = max(int(now * 1000), last_ms + 1)
         last_ms = timestamp_ms
+        # Draw the video and transmit the exact same landmarks computed here.
+        # With no encoder the original stdlib-only black demo stays unchanged.
+        landmarks = synthetic_landmarks(now - start, scenario)
         header = make_header(
             frame_id, timestamp_ms, 1280, 720,
-            synthetic_landmarks(now - start, scenario), [], demo=True
+            landmarks, [], demo=True
         )
-        yield encode_packet(header, b"")  # Display overlay on black preview.
+        jpeg = image_encoder(landmarks, frame_id) if image_encoder else b""
+        yield encode_packet(header, jpeg)
         frame_id += 1
         time.sleep(max(0.0, start + frame_id * period - time.monotonic()))
 
@@ -169,7 +173,23 @@ def serve(args):
                 with client:
                     # Re-create generator for every Unity Play session. This
                     # releases the camera/model after a client disconnect.
-                    source = demo_packets(args.fps, args.demo_scenario) if args.demo else camera_packets(args)
+                    if args.demo or args.demo_video:
+                        # Lazy import: baseline --demo requires only the standard
+                        # library, while --demo-video needs OpenCV (no webcam/ML).
+                        encoder = None
+                        if args.demo_video:
+                            from .demo_video import render_demo_jpeg
+
+                            def encoder(points, frame_id):
+                                return render_demo_jpeg(
+                                    points, frame_id, args.demo_scenario,
+                                    args.jpeg_quality
+                                )
+                        source = demo_packets(
+                            args.fps, args.demo_scenario, image_encoder=encoder
+                        )
+                    else:
+                        source = camera_packets(args)
                     try:
                         for packet in source:
                             client.sendall(packet)
@@ -181,7 +201,11 @@ def serve(args):
 
 def parse_args(argv=None):
     p = argparse.ArgumentParser(description="MagicMirror local MediaPipe sidecar")
-    p.add_argument("--demo", action="store_true", help="Synthetic 33-point pose; no camera or ML needed")
+    synthetic = p.add_mutually_exclusive_group()
+    synthetic.add_argument("--demo", action="store_true",
+                           help="Synthetic 33-point pose, black image; stdlib only")
+    synthetic.add_argument("--demo-video", action="store_true",
+                           help="Synthetic JPEG + same-frame pose; needs OpenCV, no camera or MediaPipe")
     p.add_argument("--demo-scenario", choices=SCENARIOS, default="wave",
                    help="Simulated pose: wave, walk, squat, dropout (with --demo)")
     p.add_argument("--port", type=int, default=8765)

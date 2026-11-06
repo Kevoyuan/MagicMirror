@@ -1,0 +1,99 @@
+name: Build clean MagicMirror 2.0 Git repository
+
+on:
+  push:
+    paths:
+      - 'Tools/migration/**'
+      - '.github/workflows/export-magicmirror-2.yml'
+      - 'Unity/**'
+      - 'Docs/**'
+      - 'Tools/pose_sidecar/**'
+      - 'Tools/anatomy_tools/**'
+      - 'Tools/ci/**'
+      - 'Assets-Manifest/**'
+  pull_request:
+    paths:
+      - 'Tools/migration/**'
+      - '.github/workflows/export-magicmirror-2.yml'
+      - 'Unity/**'
+      - 'Docs/**'
+      - 'Tools/pose_sidecar/**'
+      - 'Tools/anatomy_tools/**'
+      - 'Tools/ci/**'
+      - 'Assets-Manifest/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test migration exclusions and source contracts
+        run: python -m unittest discover -s Tools/migration/tests -v
+      - name: Create history-free project source tree
+        run: python Tools/migration/export_clean_repo.py --source . --output dist/MagicMirror-2.0
+      - name: Run Python tests in the actual clean tree
+        working-directory: dist/MagicMirror-2.0
+        run: |
+          python -m unittest discover -s Tools/pose_sidecar/tests -v
+          python -m unittest discover -s Tools/anatomy_tools/tests -v
+          python -m unittest discover -s Tools/ci/tests -v
+          python Tools/ci/check_mediapipe_only.py
+          python -m json.tool Unity/Packages/manifest.json >/dev/null
+          python -m json.tool Assets-Manifest/asset_sources.json >/dev/null
+      - name: Parse migrated Unity C# syntax
+        working-directory: dist/MagicMirror-2.0
+        run: |
+          python -m pip install tree-sitter==0.26.0 tree-sitter-c-sharp==0.23.5
+          python Tools/ci/check_csharp_syntax.py
+      - name: Verify no historical paths or proprietary binaries
+        working-directory: dist/MagicMirror-2.0
+        run: |
+          test ! -d OpenPosePlugin
+          test ! -f README_V2.md
+          test ! -f README_ANATOMY_IMPORT.md
+          test ! -f Unity/Assets/Editor/AnatomyArmImportWindow.cs
+          test ! -f Unity/Assets/Scripts/Anatomy/AnatomicalArmMap.cs
+          test ! -f Docs/PHASE_3B_ANATOMY_IMPORT.md
+          test ! -d Tools/migration
+          if find . -type f \( -name '*.fbx' -o -name '*.task' -o -name '*.dll' -o -name '*.dylib' -o -name '*.so' \) | grep .; then
+            echo 'Forbidden model/native binary found!' >&2
+            exit 1
+          fi
+      - name: Make new Git history with ONE clean initial commit
+        run: |
+          cd dist/MagicMirror-2.0
+          git init -b main
+          git config user.name "MagicMirror Bootstrap"
+          git config user.email "bootstrap@localhost"
+          git add -A
+          git commit -m "Initial MagicMirror 2.0 MediaPipe-only source"
+          test "$(git rev-list --count HEAD)" -eq 1
+          git ls-tree -r --name-only main > ../CLEAN_FILE_MANIFEST.txt
+          if grep -Ei 'OpenPosePlugin|AnatomyArmImportWindow|AnatomicalArmMap|\.fbx$|\.task$' ../CLEAN_FILE_MANIFEST.txt; then
+            echo 'Forbidden content in new Git commit' >&2
+            exit 1
+          fi
+          git bundle create ../MagicMirror-2.0-main.bundle main
+          git bundle verify ../MagicMirror-2.0-main.bundle
+          cd ..
+          tar --exclude='./.git' -czf MagicMirror-2.0-clean-source.tar.gz -C MagicMirror-2.0 .
+          sha256sum MagicMirror-2.0-main.bundle MagicMirror-2.0-clean-source.tar.gz > SHA256SUMS.txt
+      - name: Upload a ready-to-push clean Git repository bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: MagicMirror-2.0-clean-repository
+          path: |
+            dist/MagicMirror-2.0-main.bundle
+            dist/MagicMirror-2.0-clean-source.tar.gz
+            dist/CLEAN_FILE_MANIFEST.txt
+            dist/SHA256SUMS.txt
+          retention-days: 30
+      - name: Explicit limitation
+        run: echo 'Creates a verified clean source archive and Git bundle. Does not create a user GitHub repository, compile in Unity, or test a camera.'

@@ -32,13 +32,24 @@ namespace MagicMirror.Tracking
         public PoseLandmark[] landmarks;
         public PoseLandmark[] worldLandmarks;
 
+        // Optional protocol-v1 diagnostics added in M1. Missing fields are
+        // safely defaulted by JsonUtility; they are NOT end-to-end latency.
+        public string modelProfile;
+        public float inferenceMs;
+        public float jpegEncodeMs;
+
         public bool IsValid
         {
             get
             {
-                return version == 1 && width > 0 && height > 0 &&
+                return version == 1 &&
+                       frameId >= 0 && timestampMs >= 0 &&
+                       width > 0 && height > 0 &&
+                       width <= 8192 && height <= 8192 &&
                        landmarks != null &&
-                       (landmarks.Length == 0 || landmarks.Length == 33);
+                       (landmarks.Length == 0 || landmarks.Length == 33) &&
+                       (worldLandmarks == null || worldLandmarks.Length == 0 ||
+                        worldLandmarks.Length == 33);
             }
         }
 
