@@ -1,0 +1,45 @@
+name: Phase 4 full-body source checks
+
+on:
+  push:
+    paths:
+      - 'Unity/Assets/Scripts/Motion/FullBody*'
+      - 'Unity/Assets/Scripts/Anatomy/FullBody*'
+      - 'Unity/Assets/Editor/FullBody*'
+      - 'Unity/Assets/Editor/Phase4*'
+      - '.github/workflows/phase4-static-checks.yml'
+  pull_request:
+    paths:
+      - 'Unity/Assets/Scripts/Motion/FullBody*'
+      - 'Unity/Assets/Scripts/Anatomy/FullBody*'
+      - 'Unity/Assets/Editor/FullBody*'
+      - 'Unity/Assets/Editor/Phase4*'
+      - '.github/workflows/phase4-static-checks.yml'
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check non-destructive whole-atlas source architecture
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          base = Path("Unity/Assets")
+          profile = (base / "Scripts/Anatomy/FullBodyAtlasProfile.cs").read_text()
+          runtime = (base / "Scripts/Motion/FullBodyAtlasRetargeter.cs").read_text()
+          scene = (base / "Editor/Phase4FullBodySceneBuilder.cs").read_text()
+          setup = (base / "Editor/FullBodyAtlasSetupWindow.cs").read_text()
+          required = {
+              "one full prefab": "wholeSkeletonPrefab" in profile and "Instantiate(profile.wholeSkeletonPrefab" in runtime,
+              "rest pose preserved": "neutralAtlasPosition" in runtime and "originalLocalRotation" in runtime,
+              "hierarchy paths retained": "rendererRootPaths" in runtime and "RelativePath(" in setup,
+              "existing AR compositor reused": "Phase3XRaySceneBuilder" in scene,
+              "body pose solver": "TrySegment" in (base / "Scripts/Motion/FullBodyPoseMath.cs").read_text(),
+              "schematic demo": "Create Full Body Schematic Demo" in scene,
+          }
+          for name, ok in required.items():
+              print(name, "OK" if ok else "MISSING")
+          assert all(required.values())
+          print("Static source contracts only — NOT Unity compile/runtime tests.")
+          PY

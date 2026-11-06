@@ -1,0 +1,317 @@
+using System;
+using System.Collections.Generic;
+using MagicMirror.Anatomy;
+using MagicMirror.Tracking;
+using UnityEngine;
+
+namespace MagicMirror.Motion
+{
+    /// <summary>
+    /// Drives a SINGLE intact anatomical atlas prefab, preserving original
+    /// source mesh geometry, local coordinates and hierarchy.
+    ///
+    /// Selected rigid mesh renderers receive transforms computed from the
+    /// source/rest pose, never accumulated previous-frame rotations.
+    /// Unmapped atlas renderers follow the calibrated whole-body root only.
+    ///
+    /// Full-body 2D screen-plane demonstration, NOT 3D anatomy scanning.
+    /// </summary>
+    public sealed class FullBodyAtlasRetargeter : MonoBehaviour
+    {
+        private const int AnatomyLayer = 30;
+
+        [SerializeField] private PoseStreamReceiver poseSource;
+        [SerializeField] private Camera anatomyCamera;
+        [SerializeField] private FullBodyAtlasProfile profile;
+        [SerializeField, Range(0.1f, 1f)] private float confidenceThreshold = 0.40f;
+        [SerializeField, Min(0.1f)] private float projectedDepth = 2f;
+        [SerializeField, Min(0.1f)] private float staleAfterSeconds = 0.75f;
+
+        private sealed class MovingMesh
+        {
+            public Transform transform;
+            public FullBodyAtlasProfile.MotionGroup group;
+            public Vector3 originalLocalPosition;
+            public Quaternion originalLocalRotation;
+            public Vector3 originalLocalScale;
+            public Vector3 neutralAtlasPosition;
+            public Quaternion neutralAtlasRotation;
+            public int hierarchyDepth;
+            public Vector3 computedPosition;
+            public Quaternion computedRotation;
+            public bool hasComputedPose;
+        }
+
+        private GameObject atlasContainer;
+        private Transform atlasRoot;
+        private readonly List<MovingMesh> movingMeshes = new List<MovingMesh>();
+        private bool hasPose;
+        private float lastPoseTime = -100f;
+
+        public void Configure(PoseStreamReceiver source, Camera camera,
+                              FullBodyAtlasProfile atlasProfile)
+        {
+            if (Application.isPlaying && poseSource != null)
+                poseSource.FrameReceived -= OnPoseFrame;
+            poseSource = source;
+            anatomyCamera = camera;
+            profile = atlasProfile;
+            if (Application.isPlaying && isActiveAndEnabled && poseSource != null)
+                poseSource.FrameReceived += OnPoseFrame;
+        }
+
+        private void Awake()
+        {
+            if (profile == null || anatomyCamera == null)
+            {
+                Debug.LogWarning("MagicMirror full-body atlas is not configured.");
+                enabled = false;
+                return;
+            }
+
+            string error;
+            if (!profile.Validate(out error))
+            {
+                Debug.LogWarning("MagicMirror atlas profile invalid: " + error);
+                enabled = false;
+                return;
+            }
+
+            atlasContainer = new GameObject("Full Atlas: " + profile.name);
+            atlasContainer.transform.SetParent(transform, false);
+            atlasContainer.transform.localPosition = Vector3.zero;
+            atlasContainer.transform.localRotation = Quaternion.identity;
+            atlasContainer.transform.localScale = Vector3.one;
+
+            // Full original prefab is instantiated exactly ONCE, unchanged.
+            GameObject instance = Instantiate(profile.wholeSkeletonPrefab,
+                atlasContainer.transform, false);
+            instance.name = "Original Full Skeleton [Hierarchy Preserved]";
+            atlasRoot = instance.transform;
+
+            SetRenderLayer(atlasRoot, AnatomyLayer);
+            if (!RegisterMeshBindings())
+            {
+                Debug.LogWarning("No valid motion bindings. Whole atlas will stay neutral.");
+            }
+            atlasContainer.SetActive(false);
+        }
+
+        private void OnEnable()
+        {
+            if (poseSource != null) poseSource.FrameReceived += OnPoseFrame;
+        }
+
+        private void OnDisable()
+        {
+            if (poseSource != null) poseSource.FrameReceived -= OnPoseFrame;
+            if (atlasContainer != null) atlasContainer.SetActive(false);
+            hasPose = false;
+        }
+
+        private void LateUpdate()
+        {
+            if (hasPose && Time.realtimeSinceStartup - lastPoseTime > staleAfterSeconds)
+            {
+                hasPose = false;
+                if (atlasContainer != null) atlasContainer.SetActive(false);
+            }
+        }
+
+        private static void SetRenderLayer(Transform root, int layer)
+        {
+            root.gameObject.layer = layer;
+            foreach (Transform child in root)
+                SetRenderLayer(child, layer);
+        }
+
+        private bool RegisterMeshBindings()
+        {
+            movingMeshes.Clear();
+            var alreadyMapped = new HashSet<Transform>();
+            foreach (var group in profile.groups)
+            {
+                foreach (string path in group.rendererRootPaths)
+                {
+                    Transform branch = atlasRoot.Find(path);
+                    if (branch == null)
+                    {
+                        Debug.LogWarning("Atlas binding path not found: " + path);
+                        continue;
+                    }
+                    var renderers = branch.GetComponentsInChildren<Renderer>(true);
+                    foreach (Renderer renderer in renderers)
+                    {
+                        if (renderer is SkinnedMeshRenderer)
+                        {
+                            Debug.LogWarning("Skipping skinned renderer (not a rigid bone): " +
+                                             renderer.name);
+                            continue;
+                        }
+                        Transform mesh = renderer.transform;
+                        if (!alreadyMapped.Add(mesh))
+                        {
+                            Debug.LogWarning("Duplicate/overlapping atlas bone mapping: " +
+                                             mesh.name);
+                            continue;
+                        }
+                        int depth = 0;
+                        for (Transform parent = mesh.parent;
+                             parent != null && parent != atlasRoot;
+                             parent = parent.parent) depth++;
+
+                        movingMeshes.Add(new MovingMesh
+                        {
+                            transform = mesh,
+                            group = group,
+                            originalLocalPosition = mesh.localPosition,
+                            originalLocalRotation = mesh.localRotation,
+                            originalLocalScale = mesh.localScale,
+                            neutralAtlasPosition = atlasRoot.InverseTransformPoint(mesh.position),
+                            neutralAtlasRotation =
+                                Quaternion.Inverse(atlasRoot.rotation) * mesh.rotation,
+                            hierarchyDepth = depth
+                        });
+                    }
+                }
+            }
+            // If two bound renderers have an ancestor relationship, setting
+            // parent's world transform FIRST, then child's prevents a later
+            // inherited parent movement invalidating the child target.
+            movingMeshes.Sort((a, b) => a.hierarchyDepth.CompareTo(b.hierarchyDepth));
+            return movingMeshes.Count > 0;
+        }
+
+        private void OnPoseFrame(PoseFrame frame)
+        {
+            if (atlasRoot == null || frame == null || !frame.IsValid)
+                return;
+
+            Vector2 leftShoulder, rightShoulder;
+            if (!FullBodyPoseMath.TryPoint(frame, 11, confidenceThreshold, out leftShoulder) ||
+                !FullBodyPoseMath.TryPoint(frame, 12, confidenceThreshold, out rightShoulder))
+            {
+                atlasContainer.SetActive(false);
+                hasPose = false;
+                return;
+            }
+
+            anatomyCamera.aspect = (float)frame.width / frame.height;
+            Vector3 currentLeft = ProjectToAnatomyPlane(leftShoulder);
+            Vector3 currentRight = ProjectToAnatomyPlane(rightShoulder);
+
+            // Reset original local transforms every frame: zero accumulated
+            // rotations, preserve all unanimated source anatomical geometry.
+            foreach (var entry in movingMeshes)
+            {
+                entry.transform.localPosition = entry.originalLocalPosition;
+                entry.transform.localRotation = entry.originalLocalRotation;
+                entry.transform.localScale = entry.originalLocalScale;
+                entry.hasComputedPose = false;
+            }
+
+            // Note imported FBX root can already contain transform/scale.
+            // Use its own TransformPoint before calibrating parent container.
+            atlasContainer.transform.localPosition = Vector3.zero;
+            atlasContainer.transform.localRotation = Quaternion.identity;
+            atlasContainer.transform.localScale = Vector3.one;
+
+            Vector3 restLeft = atlasRoot.TransformPoint(profile.atlasLeftShoulderLocal);
+            Vector3 restRight = atlasRoot.TransformPoint(profile.atlasRightShoulderLocal);
+            float referenceWidth = Vector3.Distance(restLeft, restRight);
+            float currentWidth = Vector3.Distance(currentLeft, currentRight);
+            if (referenceWidth < 1e-6f || currentWidth < 1e-6f)
+            {
+                atlasContainer.SetActive(false);
+                hasPose = false;
+                return;
+            }
+
+            float uniformScale = currentWidth / referenceWidth;
+            Quaternion targetRotation = anatomyCamera.transform.rotation *
+                                        Quaternion.Euler(profile.atlasToCameraEuler);
+            Vector3 restShoulderMid = (restLeft + restRight) * 0.5f;
+            Vector3 trackedMid = (currentLeft + currentRight) * 0.5f;
+            Vector3 targetPosition = trackedMid -
+                                     targetRotation * (restShoulderMid * uniformScale);
+
+            // Deterministic root snap for the first validation milestone.
+            // Add a separately validated temporal filter after baseline tests.
+            atlasContainer.transform.SetPositionAndRotation(targetPosition, targetRotation);
+            atlasContainer.transform.localScale = Vector3.one * uniformScale;
+
+            var solved = new Dictionary<BodySegment, SegmentMotion>();
+            foreach (var group in profile.groups)
+            {
+                if (solved.ContainsKey(group.segment))
+                    continue;
+                BodySegment2D segment;
+                if (!FullBodyPoseMath.TrySegment(frame, group.segment,
+                                                confidenceThreshold, out segment))
+                    continue;
+
+                Vector3 targetStart = ProjectToAnatomyPlane(segment.start);
+                Vector3 targetEnd = ProjectToAnatomyPlane(segment.end);
+                Vector3 restStart = atlasRoot.TransformPoint(group.atlasStartLocal);
+                Vector3 restEnd = atlasRoot.TransformPoint(group.atlasEndLocal);
+                Vector3 restDirection = restEnd - restStart;
+                Vector3 targetDirection = targetEnd - targetStart;
+                if (restDirection.sqrMagnitude < 1e-8f ||
+                    targetDirection.sqrMagnitude < 1e-8f)
+                    continue;
+
+                solved[group.segment] = new SegmentMotion
+                {
+                    start = targetStart,
+                    restStart = restStart,
+                    rotation = Quaternion.FromToRotation(restDirection, targetDirection)
+                };
+            }
+
+            // Calculate targets from immutable atlas-space rest transforms
+            // BEFORE moving any parent meshes.
+            foreach (MovingMesh entry in movingMeshes)
+            {
+                SegmentMotion motion;
+                if (!solved.TryGetValue(entry.group.segment, out motion))
+                    continue;
+                Vector3 restPosition = atlasRoot.TransformPoint(entry.neutralAtlasPosition);
+                entry.computedPosition = motion.start +
+                    motion.rotation * (restPosition - motion.restStart);
+                entry.computedRotation = motion.rotation * atlasRoot.rotation *
+                                          entry.neutralAtlasRotation;
+                entry.hasComputedPose = true;
+            }
+
+            foreach (MovingMesh entry in movingMeshes)
+            {
+                if (entry.hasComputedPose)
+                    entry.transform.SetPositionAndRotation(
+                        entry.computedPosition, entry.computedRotation);
+            }
+
+            lastPoseTime = Time.realtimeSinceStartup;
+            hasPose = true;
+            atlasContainer.SetActive(true);
+        }
+
+        private struct SegmentMotion
+        {
+            public Vector3 start;
+            public Vector3 restStart;
+            public Quaternion rotation;
+        }
+
+        private Vector3 ProjectToAnatomyPlane(Vector2 normalizedSourcePoint)
+        {
+            return anatomyCamera.ViewportToWorldPoint(new Vector3(
+                normalizedSourcePoint.x, 1f - normalizedSourcePoint.y, projectedDepth));
+        }
+
+        private void OnDestroy()
+        {
+            if (atlasContainer != null)
+                Destroy(atlasContainer);
+        }
+    }
+}
