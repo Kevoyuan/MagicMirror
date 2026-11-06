@@ -1,15 +1,11 @@
-# MagicMirror — Z-Anatomy import workflow (Phase 3B)
+# Historical Phase 3B six-bone anatomy import — DEPRECATED
 
-To replace the 3D arm capsule proxies with actual anatomical bones:
+**Do not follow this workflow for MagicMirror 2.0.** Exporting left/right humerus, radius and ulna as six separate FBX prefabs was an early experiment. It is **not** the preferred implementation or a release prerequisite.
 
-1. Obtain Z-Anatomy's `SkeletalSystem100.fbx` from its original source.
-2. Use `Tools/anatomy_tools/inspect_fbx.py` inside Blender to inspect object names, mesh dimensions and candidate structures.
-3. Visually verify and separate **six bones**: left/right humerus, radius and ulna.
-4. Create Unity bone-prefab assets with **neutral root scales** and measurable proximal/distal anchors.
-5. Create the `AnatomicalArmMap` asset in Unity, assign each bone prefab, verify its identity and record license/provenance.
-6. In the generated Phase 3 scene, run **MagicMirror > Anatomy > Install Verified Arm Bones**.
-7. Run and validate the model movement over the same mirrored webcam image.
+**Current supported design:** acquire the pinned original **complete** `SkeletalSystem100.fbx`, import it intact, preserve source hierarchy and rest-pose geometry, then map reviewed joint anchors with `FullBodyAtlasProfile` and the retargeting layer. See:
 
-See `Docs/PHASE_3B_ANATOMY_IMPORT.md` for detailed steps and limitations.
+- [Complete atlas workflow](Docs/PHASE_4_FULL_ATLAS.md)
+- [Product architecture decision](Docs/ADR-001_MEDIAPIPE_ONLY.md)
+- [Roadmap](Docs/ROADMAP.md)
 
-**Status: import wizard source committed; real FBX extraction/import not yet performed.** Do not claim the X-ray mirror is complete until actual anatomy model motion and camera calibration have been validated.
+The prior experiment is preserved for historical review in [Docs/PHASE_3B_ANATOMY_IMPORT.md](Docs/PHASE_3B_ANATOMY_IMPORT.md). It has **not** been verified with a real FBX or Unity runtime.
