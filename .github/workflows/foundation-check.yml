@@ -46,3 +46,27 @@ jobs:
           python Tools/ci/check_clean_repo.py
       - name: Scope disclaimer
         run: echo 'Static source hygiene only. No Unity Editor or webcam validation occurs here.'
+
+  clean-export-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Create entirely new Git repository from clean source snapshot
+        run: |
+          git config --global user.name "MagicMirror Migration CI"
+          git config --global user.email "74452488+Kevoyuan@users.noreply.github.com"
+          bash scripts/create_standalone_repo.sh "$RUNNER_TEMP/MagicMirror-2.0"
+      - name: Prove new history has one commit and no historical files
+        run: |
+          test "$(git -C "$RUNNER_TEMP/MagicMirror-2.0" rev-list --count HEAD)" = "1"
+          test "$(git -C "$RUNNER_TEMP/MagicMirror-2.0" symbolic-ref --short HEAD)" = "main"
+          test -z "$(git -C "$RUNNER_TEMP/MagicMirror-2.0" remote)"
+          test ! -d "$RUNNER_TEMP/MagicMirror-2.0/OpenPosePlugin"
+          test ! -d "$RUNNER_TEMP/MagicMirror-2.0/model_for_test"
+          test ! -e "$RUNNER_TEMP/MagicMirror-2.0/ikun_demo.gif"
+          python "$RUNNER_TEMP/MagicMirror-2.0/Tools/ci/check_clean_repo.py"
+          python "$RUNNER_TEMP/MagicMirror-2.0/Tools/ci/check_mediapipe_only.py"
+          echo "PASS: independent main-only Git history created from clean source."
