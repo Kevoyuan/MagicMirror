@@ -10,6 +10,27 @@
 - Confirm no OpenPose native library, OpenPose Unity package, separate BODY_25 service or second camera controller is needed.
 - Record OS, camera, CPU/GPU, editor version, sidecar Python/MediaPipe versions and failures.
 
+## Automated Unity Editor synthetic gate (added in M2)
+
+The repository now includes `Unity/Assets/Editor/M2BatchValidation.cs` and `Tools/ci/run_unity_m2.py` so the already-authored Unity self-checks can be executed without clicking menus. **This gate has not yet been run against an actual Unity installation.**
+
+Close any Unity Editor instance already opening the same project, then run the following from the repository root. Replace the editor path with the executable installed via Unity Hub:
+
+~~~bash
+# macOS (example path; adjust for local Unity Hub installation)
+python3 Tools/ci/run_unity_m2.py \
+  --unity "/Applications/Unity/Hub/Editor/6000.3.27f2/Unity.app/Contents/MacOS/Unity"
+
+# Windows PowerShell (example path)
+python Tools/ci/run_unity_m2.py --unity "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.27f2\\Editor\\Unity.exe"
+~~~
+
+The script launches Unity with `-batchmode -nographics -quit -projectPath ... -executeMethod MagicMirror.Editor.M2BatchValidation.Run`. It requires **both** Unity exit code 0 **and** the explicit `MAGICMIRROR_M2_BATCH_PASS` log marker; stale logs are cleared before invocation. Nonzero exit, an explicit fail marker, or missing success marker fails closed. The default log is `m2-editor-validation.log` in the repository root (do not commit it).
+
+The Editor suite invokes existing checks for pose math, full-body pose, stability/hierarchy and atlas registration/paths. Passing it proves **those synthetic Editor checks were executed** and the Unity project compiled sufficiently to run the entrypoint; it does NOT prove real webcam access, MediaPipe native inference, camera/video synchronization, RenderTexture alpha, imported FBX integrity or complete AR performance.
+
+The runner itself is covered by `python3 -m unittest discover -s Tools/ci/tests -v` in CI, which does **not** launch Unity. Record the actual Editor log and hardware details before marking any M2 gate as passed.
+
 ## Gate A — no camera / no MediaPipe wheel
 
 ~~~bash
