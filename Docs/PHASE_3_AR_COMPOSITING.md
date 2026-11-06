@@ -1,5 +1,7 @@
 # Phase 3 — Anatomical X-Ray compositing (SCHEMATIC PREVIEW)
 
+> **Historical interim technique:** This page explains the old 2D proxy-arm compositor and its coordinate contracts. It is not the recommended FBX authoring procedure. For the product use **one intact Z-Anatomy atlas** and `FullBodyAtlasProfile`, as documented in [Phase 4 whole-atlas setup](PHASE_4_FULL_ATLAS.md).
+
 ## Status
 
 **Source-level implementation only; Unity Editor/runtime and real-camera tests are still pending.** This phase adds a generated AR scene with transparent anatomy rendering on top of the **same webcam image used by the pose estimator**, and an adjustable opacity slider. The included bones are *procedural capsule proxies* solely for debugging. These are not Z-Anatomy FBX assets or medically accurate silhouettes, so **v0.3 is NOT complete**.
@@ -93,9 +95,9 @@ blender --background --python Tools/anatomy_tools/inspect_fbx.py -- \
     --output /tmp/magicmirror_skeleton_inventory.json
 ```
 
-Inspect the inventory for humerus, radius, ulna; names are merely hints. Confirm each bone object's identity, side, local coordinate system, actual proximal/distal joint center, dimensions, and license. Fill in `Assets-Manifest/arm_bone_mapping.template.json` (without claiming unknown values). Convert the verified objects to standalone Unity mesh assets; assign their parent roots and measured endpoints to the existing `AnatomicalArmRetargeter` components.
+Inspect the whole FBX hierarchy, verify real bone identities, joint anchors, source coordinate conventions and licenses. **Do not extract isolated mesh assets as the primary MagicMirror 2.0 workflow.** Import the full `SkeletalSystem100.fbx` intact and use the existing `FullBodyAtlasProfile` plus calibration editors described in `Docs/PHASE_4_FULL_ATLAS.md`. The older six-bone template is retained for compatibility with historical synthetic arm experiments only.
 
-**Never simply replace the capsule mesh renderer with a full unsplit FBX hierarchy and assume the bones will articulate correctly.** Each bone must be a transformable element with verified endpoints and joint location. Radius/ulna twisting is not supported by these three 2D keypoints.
+**Importing a whole static FBX does not make it a rigged character.** Retargeting still requires reviewed per-region motion bindings, anatomical anchors and joints, preserving the original complete FBX model hierarchy. Radius/ulna twisting is not supported by these three 2D keypoints.
 
 No Z-Anatomy model weights or FBX are bundled in this source change.
 
