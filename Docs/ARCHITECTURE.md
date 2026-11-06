@@ -1,62 +1,73 @@
-# MagicMirror 2.0 — Architecture
+# MagicMirror 2.0 — Active Architecture (MediaPipe only)
 
-## Product target
+**Architecture status:** ADR-001 accepted, 2026-11-06.  
+**Implementation status:** Phase 4B source exists; Unity Editor compilation and end-to-end camera/anatomy validation remain pending.
 
-Single-camera interactive anatomical **illustration** aligned to a person. No true internal scan, CT/MRI, medical diagnosis, individualized anatomical measurements or promises of clinically accurate alignment.
+## Product boundary
 
-## Pipeline
+A **single-person** educational anatomical mirror. Webcam video and MediaPipe landmarks are used to register an **illustrative standard reference atlas**. No medical scanner, personalized internal anatomy reconstruction or diagnostic promises.
 
-```text
-Webcam (video + timestamp + calibration)
-       |
-       +--> Raw video ----------------------------------+
-       |                                               |
-       v                                               v
-Pose Provider (MediaPipe candidate)           Foreground segmentation
-       |
-       v
-Pose Frame (keypoints + visibility + timestamps)
-       |
-       v
-Temporal filter + quality gating
-       |
-       v
-2D/3D registration + body-scale calibration
-       |
-       v
-Anatomical retargeting (joint anchors, rotations, hierarchy)
-       |
-       v
-Anatomy model layers (Z-Anatomy reference models)
-       |
-       +-----------------> Unity compositing <---------+
-                                   |
-                                   v
-                      Mirror view + labels + controls
-```
+## Current baseline flow vs planned extensions
 
-## Module contracts
+~~~text
+Webcam (one owner: Python sidecar)
+  └── MediaPipe Tasks Pose Landmarker (VIDEO, 33 keypoints)
+        ├── source frame / JPEG
+        ├── normalized image landmarks + presence/visibility
+        └── optional world landmarks (estimated, not measured anatomy)
+              │
+              ▼
+        matched, timestamped PoseFrame v1 + JPEG
+              │
+        localhost-only framed TCP
+              │
+              ▼
+        Unity PoseStreamReceiver (worker thread, latest-only)
+              ├── same-frame mirrored RawImage preview
+              └── quality gating / pose math / smoothing
+                    └── FullBodyAtlasRetargeter
+                          └── whole Z-Anatomy FBX + FullBodyAtlasProfile
+                                └── transparent RenderTexture compositor
+                                      └── interactive mirror
+~~~
 
-- **Camera:** capture, device discovery, permission/error states, mirror orientation, image geometry, frame timestamps.
-- **Tracking:** pluggable estimators output typed pose frames; never let each model component independently consume a shared frame queue.
-- **Motion:** map named body joints to anatomical rig joints; calibrated coordinate transforms, temporally stabilized rotations and visibility handling.
-- **Anatomy:** imported reference meshes, fixed naming/structure IDs, bone hierarchy, pivot metadata and attribution.
-- **Rendering:** compose camera feed and registered anatomy, including transparency and eventual occlusion.
-- **Interaction:** mouse-first selections, calibrated UI and educational annotations.
+**Present source is not the same as demonstrated runtime.** The model is not yet imported; current full-body motion uses an approximate 2D camera-plane mapping. A constrained 3D solver, accurate camera registration, segmentation masking, and muscle/organ layers are *planned* M4–M7 work.
 
-## Technical constraints
+## Module ownership
 
-1. 2D body keypoints and estimated 3D world landmarks do not guarantee calibrated camera-space depth.
-2. Static anatomical FBX meshes are NOT already rigged characters; model preprocessing and anatomical joint centers require assessment.
-3. Foreground masks alone do not resolve all 3D occlusions.
-4. One-person, mostly frontal posture is the initial scope; evaluate other viewpoints later.
-5. Privacy by default: webcam frames processed locally, not recorded or transmitted by Phase 0.
-6. Maintain independently testable tracking, retargeting and rendering subsystems.
+| Owner | Path | Responsibility |
+| --- | --- | --- |
+| Camera and pose | `Tools/pose_sidecar/` | Sole webcam capture; MediaPipe model inference; same-frame timestamped output |
+| Framed wire format | `Tools/pose_sidecar/protocol.py` | Versioned JSON + JPEG on loopback TCP |
+| Unity receiver | `Unity/Assets/Scripts/Tracking/` | Background I/O, bounded pending frame, main-thread textures/overlay |
+| Motion | `Unity/Assets/Scripts/Motion/` | Estimated joint mapping, smoothing, dropout recovery, future constrained 3D kinematics |
+| Atlas | `Unity/Assets/Scripts/Anatomy/` | Full-body model profile, structural identity, verified joint anchors |
+| AR rendering | `Unity/Assets/Scripts/Rendering/` | Camera image, transparent anatomy rendering and display compositing |
+| Authoring/validation | `Unity/Assets/Editor/` | Scene builders, FBX hierarchy mapping, calibration windows, self-checks |
 
-## First vertical slice (v0.3)
+## Non-negotiable contracts
 
-Real arm -> shoulder/elbow/wrist pose -> humerus/radius/ulna transforms -> model-to-camera registration -> mirrored anatomical overlay, with user adjustment and a transparency slider.
+1. **No OpenPose runtime:** The historical `OpenPosePlugin/` does not participate in the active Unity/sidecar pipeline. The CI guard checks active source and Unity packages.
+2. **Same frame:** A MediaPipe inference result is associated with the camera image used for that inference. Never mix frame IDs during asynchronous migration.
+3. **Two coordinate spaces:** normalized image-space landmarks for 2D display and approximate world landmarks for pose direction. Neither directly supplies exact bone positions. See `Docs/POSE_FRAME_CONTRACT.md`.
+4. **One mirror transform:** The Unity visual reflection applies to both image and pose; anatomical left/right must stay consistent.
+5. **Preserve full source atlas:** do not rebuild anatomy as hundreds of independently exported FBXs. Retargeter binds reviewed subtrees/segments to immutable rest transforms.
+6. **Threading:** socket read occurs on worker thread, UnityEngine API calls only on main thread.
+7. **Bounded backlog:** latest-only frame dispatch to prevent ever-growing latency.
+8. **Local privacy:** loopback-only stream, no default recording or cloud transfer.
+9. **Runtime before claims:** CI syntax checks and mock tests cannot replace Unity compilation, actual camera tests or FBX verification.
 
-## Phase 0 implementation
+## Planned technical migration points
 
-The `CameraPreviewController` and scene-generator editor command are deliberately minimal, independent of anatomical models or external trackers.
+- **M1:** lock tested MediaPipe build, model-size profiles, confidence thresholds, timestamp identity, benchmark metrics; optional LIVE_STREAM only with callback↔image pairing.
+- **M2:** actually compile/run `Unity/`, prove synthetic and real-camera overlays/recovery/alpha, and record platform differences.
+- **M3:** fetch the pinned original whole `SkeletalSystem100.fbx`, verify structure, license and critical joint anchors.
+- **M4:** replace approximate 2D retargeting with plausible constrained 3D rotations; preserve lengths, hinge limits and rest-pose relationships.
+- **M5:** camera registration, calibration and reprojection/occlusion evaluation.
+- **M6–M9:** skeleton MVP, layers, learning experience and packaged desktop release.
+
+## Legacy references
+
+`OpenPosePlugin/` is archived historical content, not a dependency. `Docs/PHASE_3B_ANATOMY_IMPORT.md` documents a discontinued six-bone experiment. The preferred whole-atlas workflow is `Docs/PHASE_4_FULL_ATLAS.md`.
+
+**Authoritative navigation:** `Docs/PRODUCT_VISION.md` → `Docs/ADR-001_MEDIAPIPE_ONLY.md` → this file → `Docs/POSE_FRAME_CONTRACT.md` → `Docs/ROADMAP.md` → `Docs/UNITY_RUNTIME_VALIDATION.md`.
