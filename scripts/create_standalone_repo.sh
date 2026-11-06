@@ -20,9 +20,10 @@ if [[ -z "$source_root" ]]; then
 fi
 cd "$source_root"
 
-branch="$(git symbolic-ref --quiet --short HEAD || true)"
-if [[ "$branch" != "feature/magicmirror-2.0-clean-migration" ]]; then
-  echo "Refusing to export branch '$branch'. Checkout the clean migration branch first." >&2
+# A detached CI checkout and a published main branch are both valid source
+# trees. The SOURCE CHECKS below, not a Git branch name, prove cleanliness.
+if [[ ! -f "Docs/NEW_REPOSITORY_SETUP.md" ]]; then
+  echo "Not a prepared MagicMirror 2.0 standalone source snapshot." >&2
   exit 2
 fi
 if [[ -n "$(git status --porcelain)" ]]; then
