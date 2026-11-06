@@ -47,7 +47,7 @@ Webcam (one owner: Python sidecar)
 
 ## Non-negotiable contracts
 
-1. **No OpenPose runtime:** The historical `OpenPosePlugin/` does not participate in the active Unity/sidecar pipeline. The CI guard checks active source and Unity packages.
+1. **No OpenPose dependency or source directory:** The standalone source tree excludes the historical Unity/OpenPose project completely; CI checks the active Unity/sidecar code and tracked files.
 2. **Same frame:** A MediaPipe inference result is associated with the camera image used for that inference. Never mix frame IDs during asynchronous migration.
 3. **Two coordinate spaces:** normalized image-space landmarks for 2D display and approximate world landmarks for pose direction. Neither directly supplies exact bone positions. See `Docs/POSE_FRAME_CONTRACT.md`.
 4. **One mirror transform:** The Unity visual reflection applies to both image and pose; anatomical left/right must stay consistent.
@@ -66,8 +66,8 @@ Webcam (one owner: Python sidecar)
 - **M5:** camera registration, calibration and reprojection/occlusion evaluation.
 - **M6–M9:** skeleton MVP, layers, learning experience and packaged desktop release.
 
-## Legacy references
+## Historical provenance
 
-`OpenPosePlugin/` is archived historical content, not a dependency. `Docs/PHASE_3B_ANATOMY_IMPORT.md` documents a discontinued six-bone experiment. The preferred whole-atlas workflow is `Docs/PHASE_4_FULL_ATLAS.md`.
+The discontinued OpenPose prototype and early six-bone experiments are retained only in the [original project repository](https://github.com/Kevoyuan/MagicMirror). They are not shipped in the standalone source snapshot. The current full-atlas path is `Docs/PHASE_4_FULL_ATLAS.md`.
 
 **Authoritative navigation:** `Docs/PRODUCT_VISION.md` → `Docs/ADR-001_MEDIAPIPE_ONLY.md` → this file → `Docs/POSE_FRAME_CONTRACT.md` → `Docs/ROADMAP.md` → `Docs/UNITY_RUNTIME_VALIDATION.md`.
