@@ -92,7 +92,9 @@ def camera_packets(args):
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
     camera.set(cv2.CAP_PROP_FPS, args.fps)
 
-    with contextlib.closing(camera), mp.tasks.vision.PoseLandmarker.create_from_options(options) as detector:
+    with contextlib.ExitStack() as stack:
+        stack.callback(camera.release)
+        detector = stack.enter_context(mp.tasks.vision.PoseLandmarker.create_from_options(options))
         frame_id, last_ms = 0, -1
         while True:
             ok, image = camera.read()
