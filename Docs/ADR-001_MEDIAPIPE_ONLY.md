@@ -11,7 +11,7 @@ MediaPipe **Tasks Pose Landmarker** is the only supported full-body pose engine 
 - Run one-person detection first; use **VIDEO** inference mode for same-frame reproducibility.
 - Preserve the original **complete** Z-Anatomy `SkeletalSystem100.fbx`; use a non-destructive FullBodyAtlasProfile and motion-binding layer.
 - Store image-space landmarks and optional world landmarks as distinct estimated observations, never as measured internal anatomy.
-- Keep historical `OpenPosePlugin/` as an untouched reference for now. It must not be imported or referenced by the active Unity project, Python sidecar, packages, or build configuration.
+- Keep the historical OpenPose project **only in the original repository**. It is excluded completely from the new standalone MagicMirror 2.0 source tree and is not a build dependency.
 
 ## Rejected alternatives
 
@@ -29,8 +29,7 @@ Active runtime:
 - `Unity/Assets/Scripts/Anatomy/`: intact atlas, identity mapping and anchors.
 - `Unity/Assets/Scripts/Rendering/`: camera-aligned transparent composition.
 
-Non-runtime historical reference:
-- `OpenPosePlugin/`, `Docs/LEGACY_README_2023.md`, and the deprecated Phase 3B individual-bone import path.
+Historical material remains in [the original repository](https://github.com/Kevoyuan/MagicMirror) for attribution and archaeology, **not** in this standalone source snapshot.
 
 ## Architecture invariants and safeguards
 
@@ -40,10 +39,10 @@ Non-runtime historical reference:
 4. Unity GPU/texture/UI APIs are called on the main thread.
 5. The receiver keeps only the latest packet so a slow render loop cannot build an unbounded backlog.
 6. A standard reference anatomy overlay is an educational illustration, **not** an X-ray, a personal anatomy scan, or a diagnosis.
-7. `python3 Tools/ci/check_mediapipe_only.py` rejects active-tree OpenPose/BODY_25 runtime references; legacy content outside the active tree remains available.
+7. `python3 Tools/ci/check_mediapipe_only.py` rejects active-tree OpenPose/BODY_25 runtime references; the clean-repository guard additionally prevents historical binaries being tracked.
 
 ## Status and validation
 
-This decision supersedes the pose-provider options in the early `Docs/ARCHITECTURE.md` and the six-bone recommendations in `README_ANATOMY_IMPORT.md`.
+This decision supersedes the earlier OpenPose and isolated six-bone workflows in the source project's history. The standalone repository uses the whole-atlas path in `Docs/PHASE_4_FULL_ATLAS.md`.
 
 **Static architecture CI passing is not the same as a working Unity build.** The Unity 6.3 Editor compile, real webcam, full Z-Anatomy FBX import, and anatomical motion still require actual runtime validation. See `Docs/ROADMAP.md` and `Docs/UNITY_RUNTIME_VALIDATION.md`.
