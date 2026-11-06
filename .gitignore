@@ -1,11 +1,42 @@
-
-!/OpenPosePlugin/Assets/OpenPose/Examples/Scripts/OpenPoseUserScript.cs
-
-*.blend
-*.blend1
-
+# Python dependencies, caches, local test artifacts
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
 *.log
-*.dwlt
+m2-editor-validation.log
 
-OpenPosePlugin/Assets/OpenPose
-!OpenPosePlugin/Assets/OpenPose/Examples/Scenes
+# Unity project output (keep source Assets, Packages and ProjectSettings)
+Unity/[Ll]ibrary/
+Unity/[Tt]emp/
+Unity/[Oo]bj/
+Unity/[Bb]uild/
+Unity/[Bb]uilds/
+Unity/[Ll]ogs/
+Unity/[Uu]serSettings/
+Unity/[Mm]emoryCaptures/
+Unity/[Rr]ecordings/
+Unity/*.csproj
+Unity/*.sln
+
+# Models are downloaded locally and must not be redistributed by default
+Tools/pose_sidecar/models/
+Unity/Assets/ThirdParty/ZAnatomy/*.fbx
+Unity/Assets/ThirdParty/ZAnatomy/*.fbx.meta
+*.partial
+
+# Local videos/sensitive webcam recordings
+recordings/
+captures/
+*.mp4
+*.mov
+*.avi
+*.webm
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
