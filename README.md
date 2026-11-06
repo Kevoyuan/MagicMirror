@@ -18,6 +18,7 @@ MagicMirror 2.0 is a new Unity-based anatomical *illustration* prototype. The in
 | Left/right elbow angle estimates | Added | Unity self-check pending |
 | Phase 3 transparent anatomy RenderTexture | Added | Pending |
 | Schematic humerus/radius/ulna AR proxies | Added | Pending |
+| Controlled verified anatomical FBX import wizard | Added | Editor + real mesh tests pending |
 | Z-Anatomy FBX metadata inventory tooling | Added | Python name-hint tests; Blender import pending |
 | Actual anatomical FBX bones + accurate calibration | **Not done** | Not applicable |
 
@@ -67,6 +68,7 @@ Webcam (Python sidecar) -> MediaPipe 33-keypoint pose + JPEG
 - `Docs/PHASE_2_ARM_FOUNDATION.md` — interim retargeter
 - `Docs/PHASE_3_AR_COMPOSITING.md` — current compositing stage, coordinate contract and model workflow
 - `Docs/PHASE_3_TEST_CASES.md` — manual acceptance tests
+- `Docs/PHASE_3B_ANATOMY_IMPORT.md` — six-bone asset mapping and editor installer
 - `Docs/ASSETS_AND_LICENSES.md` — third-party provenance and licensing
 - `Docs/LEGACY_README_2023.md` — original project's README, preserved for reference
 
