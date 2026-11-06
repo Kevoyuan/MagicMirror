@@ -64,7 +64,7 @@ namespace MagicMirror.Editor
 
         private static void Install(AnatomicalArmMap definition)
         {
-            string problem;
+            string problem = "No anatomical map provided.";
             if (definition == null || !definition.Validate(out problem))
                 throw new InvalidOperationException("Invalid arm map: " + problem);
 

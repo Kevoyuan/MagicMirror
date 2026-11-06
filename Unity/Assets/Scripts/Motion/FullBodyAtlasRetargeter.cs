@@ -16,6 +16,8 @@ namespace MagicMirror.Motion
     ///
     /// Full-body 2D screen-plane demonstration, NOT 3D anatomy scanning.
     /// </summary>
+    public enum FullBodyViewMode { FullBody, UpperBody, ArmsOnly, LegsOnly }
+
     public sealed class FullBodyAtlasRetargeter : MonoBehaviour
     {
         private const int AnatomyLayer = 30;
@@ -26,6 +28,10 @@ namespace MagicMirror.Motion
         [SerializeField, Range(0.1f, 1f)] private float confidenceThreshold = 0.40f;
         [SerializeField, Min(0.1f)] private float projectedDepth = 2f;
         [SerializeField, Min(0.1f)] private float staleAfterSeconds = 0.75f;
+        [Header("Pose stabilization (image-space, not clinical measurements)")]
+        [SerializeField, Range(0.01f, 0.5f)] private float poseHalfLifeSeconds = 0.09f;
+        [SerializeField, Range(0f, 0.6f)] private float dropoutGraceSeconds = 0.22f;
+        [SerializeField, Range(0.03f, 0.9f)] private float maxNormalizedJump = 0.23f;
 
         private sealed class MovingMesh
         {
@@ -45,6 +51,15 @@ namespace MagicMirror.Motion
         private GameObject atlasContainer;
         private Transform atlasRoot;
         private readonly List<MovingMesh> movingMeshes = new List<MovingMesh>();
+        private readonly Dictionary<BodySegment, SegmentMotion> solved =
+            new Dictionary<BodySegment, SegmentMotion>();
+        private FullBodyPoseSmoother poseSmoother;
+        [Header("Debug anatomical focus")]
+        [SerializeField] private FullBodyViewMode viewMode = FullBodyViewMode.FullBody;
+        private readonly Dictionary<Renderer, bool> originalVisibility =
+            new Dictionary<Renderer, bool>();
+        private readonly Dictionary<Renderer, BodySegment> rendererRegion =
+            new Dictionary<Renderer, BodySegment>();
         private bool hasPose;
         private float lastPoseTime = -100f;
 
@@ -62,6 +77,8 @@ namespace MagicMirror.Motion
 
         private void Awake()
         {
+            poseSmoother = new FullBodyPoseSmoother(
+                poseHalfLifeSeconds, dropoutGraceSeconds, maxNormalizedJump);
             if (profile == null || anatomyCamera == null)
             {
                 Debug.LogWarning("MagicMirror full-body atlas is not configured.");
@@ -70,9 +87,10 @@ namespace MagicMirror.Motion
             }
 
             string error;
-            if (!profile.Validate(out error))
+            if (!profile.Validate(out error) ||
+                !profile.ValidateHierarchy(out error))
             {
-                Debug.LogWarning("MagicMirror atlas profile invalid: " + error);
+                Debug.LogWarning("MagicMirror atlas profile/hierarchy invalid: " + error);
                 enabled = false;
                 return;
             }
@@ -94,6 +112,8 @@ namespace MagicMirror.Motion
             {
                 Debug.LogWarning("No valid motion bindings. Whole atlas will stay neutral.");
             }
+            CacheRendererRegions();
+            ApplyViewMode();
             atlasContainer.SetActive(false);
         }
 
@@ -106,15 +126,100 @@ namespace MagicMirror.Motion
         {
             if (poseSource != null) poseSource.FrameReceived -= OnPoseFrame;
             if (atlasContainer != null) atlasContainer.SetActive(false);
+            if (poseSmoother != null) poseSmoother.Reset();
             hasPose = false;
         }
 
         private void LateUpdate()
         {
+            // Development controls: Focus views without modifying original FBX
+            // hierarchy or destroying any anatomical structures.
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetKeyDown(KeyCode.Alpha1)) SetViewMode(FullBodyViewMode.FullBody);
+            if (Input.GetKeyDown(KeyCode.Alpha2)) SetViewMode(FullBodyViewMode.UpperBody);
+            if (Input.GetKeyDown(KeyCode.Alpha3)) SetViewMode(FullBodyViewMode.ArmsOnly);
+            if (Input.GetKeyDown(KeyCode.Alpha4)) SetViewMode(FullBodyViewMode.LegsOnly);
+#endif
+
             if (hasPose && Time.realtimeSinceStartup - lastPoseTime > staleAfterSeconds)
             {
                 hasPose = false;
                 if (atlasContainer != null) atlasContainer.SetActive(false);
+            }
+        }
+
+        private void OnValidate()
+        {
+            if (Application.isPlaying && atlasRoot != null)
+                ApplyViewMode();
+        }
+
+        public FullBodyViewMode CurrentViewMode { get { return viewMode; } }
+
+        public void SetViewMode(FullBodyViewMode mode)
+        {
+            viewMode = mode;
+            ApplyViewMode();
+        }
+
+        private void CacheRendererRegions()
+        {
+            originalVisibility.Clear();
+            rendererRegion.Clear();
+            foreach (Renderer renderer in atlasRoot.GetComponentsInChildren<Renderer>(true))
+                originalVisibility[renderer] = renderer.enabled;
+
+            foreach (MovingMesh entry in movingMeshes)
+            {
+                Renderer renderer = entry.transform.GetComponent<Renderer>();
+                if (renderer != null)
+                    rendererRegion[renderer] = entry.group.segment;
+            }
+        }
+
+        private void ApplyViewMode()
+        {
+            if (atlasRoot == null) return;
+            foreach (var pair in originalVisibility)
+            {
+                BodySegment segment;
+                bool assigned = rendererRegion.TryGetValue(pair.Key, out segment);
+                bool allowed = viewMode == FullBodyViewMode.FullBody ||
+                               (assigned && MatchesMode(segment, viewMode));
+                if (pair.Key != null)
+                    pair.Key.enabled = pair.Value && allowed;
+            }
+        }
+
+        private static bool MatchesMode(BodySegment segment, FullBodyViewMode mode)
+        {
+            switch (mode)
+            {
+                case FullBodyViewMode.UpperBody:
+                    return segment == BodySegment.Head ||
+                           segment == BodySegment.Torso ||
+                           segment == BodySegment.LeftUpperArm ||
+                           segment == BodySegment.RightUpperArm ||
+                           segment == BodySegment.LeftForearm ||
+                           segment == BodySegment.RightForearm ||
+                           segment == BodySegment.LeftHand ||
+                           segment == BodySegment.RightHand;
+                case FullBodyViewMode.ArmsOnly:
+                    return segment == BodySegment.LeftUpperArm ||
+                           segment == BodySegment.RightUpperArm ||
+                           segment == BodySegment.LeftForearm ||
+                           segment == BodySegment.RightForearm ||
+                           segment == BodySegment.LeftHand ||
+                           segment == BodySegment.RightHand;
+                case FullBodyViewMode.LegsOnly:
+                    return segment == BodySegment.LeftThigh ||
+                           segment == BodySegment.RightThigh ||
+                           segment == BodySegment.LeftShin ||
+                           segment == BodySegment.RightShin ||
+                           segment == BodySegment.LeftFoot ||
+                           segment == BodySegment.RightFoot;
+                default:
+                    return true;
             }
         }
 
@@ -187,9 +292,11 @@ namespace MagicMirror.Motion
             if (atlasRoot == null || frame == null || !frame.IsValid)
                 return;
 
+            float receiveTime = Time.realtimeSinceStartup;
             Vector2 leftShoulder, rightShoulder;
-            if (!FullBodyPoseMath.TryPoint(frame, 11, confidenceThreshold, out leftShoulder) ||
-                !FullBodyPoseMath.TryPoint(frame, 12, confidenceThreshold, out rightShoulder))
+            if (!poseSmoother.TryShoulders(
+                frame, confidenceThreshold, receiveTime,
+                out leftShoulder, out rightShoulder))
             {
                 atlasContainer.SetActive(false);
                 hasPose = false;
@@ -240,14 +347,14 @@ namespace MagicMirror.Motion
             atlasContainer.transform.SetPositionAndRotation(targetPosition, targetRotation);
             atlasContainer.transform.localScale = Vector3.one * uniformScale;
 
-            var solved = new Dictionary<BodySegment, SegmentMotion>();
+            solved.Clear();
             foreach (var group in profile.groups)
             {
                 if (solved.ContainsKey(group.segment))
                     continue;
                 BodySegment2D segment;
-                if (!FullBodyPoseMath.TrySegment(frame, group.segment,
-                                                confidenceThreshold, out segment))
+                if (!poseSmoother.TrySegment(frame, group.segment,
+                                             confidenceThreshold, receiveTime, out segment))
                     continue;
 
                 Vector3 targetStart = ProjectToAnatomyPlane(segment.start);
@@ -290,7 +397,7 @@ namespace MagicMirror.Motion
                         entry.computedPosition, entry.computedRotation);
             }
 
-            lastPoseTime = Time.realtimeSinceStartup;
+            lastPoseTime = receiveTime;
             hasPose = true;
             atlasContainer.SetActive(true);
         }

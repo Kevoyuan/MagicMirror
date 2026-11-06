@@ -14,7 +14,7 @@ from pathlib import Path
 import socket
 import time
 
-from .demo import synthetic_landmarks
+from .demo import SCENARIOS, synthetic_landmarks
 from .protocol import VERSION, encode_packet
 
 HOST = "127.0.0.1"
@@ -47,7 +47,7 @@ def serialize_landmark(lm: object) -> dict[str, float]:
     }
 
 
-def demo_packets(fps: int):
+def demo_packets(fps: int, scenario: str = "wave"):
     period = 1.0 / fps
     start = time.monotonic()
     frame_id = 0
@@ -58,7 +58,7 @@ def demo_packets(fps: int):
         last_ms = timestamp_ms
         header = make_header(
             frame_id, timestamp_ms, 1280, 720,
-            synthetic_landmarks(now - start), [], demo=True
+            synthetic_landmarks(now - start, scenario), [], demo=True
         )
         yield encode_packet(header, b"")  # Display overlay on black preview.
         frame_id += 1
@@ -137,7 +137,7 @@ def serve(args):
                 with client:
                     # Re-create generator for every Unity Play session. This
                     # releases the camera/model after a client disconnect.
-                    source = demo_packets(args.fps) if args.demo else camera_packets(args)
+                    source = demo_packets(args.fps, args.demo_scenario) if args.demo else camera_packets(args)
                     try:
                         for packet in source:
                             client.sendall(packet)
@@ -150,6 +150,8 @@ def serve(args):
 def parse_args(argv=None):
     p = argparse.ArgumentParser(description="MagicMirror local MediaPipe sidecar")
     p.add_argument("--demo", action="store_true", help="Synthetic 33-point pose; no camera or ML needed")
+    p.add_argument("--demo-scenario", choices=SCENARIOS, default="wave",
+                   help="Simulated pose: wave, walk, squat, dropout (with --demo)")
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--camera", type=int, default=0)
     p.add_argument("--width", type=int, default=1280)

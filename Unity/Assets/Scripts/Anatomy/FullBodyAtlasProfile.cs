@@ -105,13 +105,65 @@ namespace MagicMirror.Anatomy
                 }
                 foreach (string path in group.rendererRootPaths)
                 {
-                    if (string.IsNullOrWhiteSpace(path) || !paths.Add(path))
+                    if (string.IsNullOrWhiteSpace(path) || path.StartsWith("/") ||
+                        path.EndsWith("/") || path.Contains("//"))
                     {
-                        error = "Empty or duplicate hierarchy path: " + path;
+                        error = "Invalid hierarchy path in " + group.segment + ": " + path;
+                        return false;
+                    }
+
+                    // A child subtree is ALREADY included by a parent path.
+                    // Allowing both would drive its renderer twice or make
+                    // unrelated anatomical regions inherit wrong rotations.
+                    foreach (string existing in paths)
+                    {
+                        if (path == existing ||
+                            path.StartsWith(existing + "/", StringComparison.Ordinal) ||
+                            existing.StartsWith(path + "/", StringComparison.Ordinal))
+                        {
+                            error = "Overlapping atlas subtree paths: " + existing +
+                                    " versus " + path;
+                            return false;
+                        }
+                    }
+                    paths.Add(path);
+                }
+            }
+            error = null;
+            return true;
+        }
+
+        /// <summary>
+        /// One-time deep check of paths against the original full FBX/prefab.
+        /// Avoid calling from every EditorWindow.OnGUI repaint: a Z-Anatomy
+        /// atlas may contain thousands of transform/mesh objects.
+        /// This check never modifies source transforms or mesh assets.
+        /// </summary>
+        public bool ValidateHierarchy(out string error)
+        {
+            if (!Validate(out error))
+                return false;
+
+            Transform root = wholeSkeletonPrefab.transform;
+            foreach (MotionGroup group in groups)
+            {
+                foreach (string path in group.rendererRootPaths)
+                {
+                    Transform branch = root.Find(path);
+                    if (branch == null)
+                    {
+                        error = group.segment + ": missing path in complete atlas: " + path;
+                        return false;
+                    }
+                    if (branch.GetComponentInChildren<MeshRenderer>(true) == null)
+                    {
+                        error = group.segment + ": path has no rigid MeshRenderer: " + path +
+                                " (SkinnedMeshRenderer-only groups are not supported).";
                         return false;
                     }
                 }
             }
+
             error = null;
             return true;
         }
