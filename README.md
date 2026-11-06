@@ -24,6 +24,10 @@ MagicMirror 2.0 is a new Unity-based anatomical *illustration* prototype. The in
 | Full-body schematic test scene generator | Added | Unity Editor pending |
 | Full-body motion smoothing, dropout hold and outlier gating | Added | Unity self-check pending |
 | Pinned full Z-Anatomy FBX downloader and hash verification | Added | Python unit tests; actual download pending |
+| Full-atlas two-shoulder registration | Added | Unity Editor self-check pending |
+| Interactive full-FBX joint authoring window | Added | Unity Editor pending |
+| Sibling-indexed, validated hierarchy paths | Added | Unity Editor self-check pending |
+| All-project Unity C# syntax parsing | Added | GitHub CI pending |
 | Atlas hierarchy overlap/missing-path validation | Added | Unity self-check pending |
 | Full / Upper / Arms / Legs focus modes | Added | Unity AR scene pending |
 | Four deterministic synthetic movement scenarios | Added | Python CI tests |
@@ -92,6 +96,7 @@ Webcam (Python sidecar) -> MediaPipe 33-keypoint pose + JPEG
 - `Docs/PHASE_3_TEST_CASES.md` — manual acceptance tests
 - `Docs/PHASE_3B_ANATOMY_IMPORT.md` — previous six-bone mapping experiment (not preferred for the full model)
 - `Docs/PHASE_4_FULL_ATLAS.md` — preferred intact-FBX full-body retargeting and setup; now includes stability, focus modes and regression cases
+- `Docs/PHASE_4B_CALIBRATION.md` — visual joint anchor authoring, registration math and duplicate-name-safe FBX paths
 - `Docs/ASSETS_AND_LICENSES.md` — third-party provenance and licensing
 - `Docs/LEGACY_README_2023.md` — original project's README, preserved for reference
 
@@ -103,3 +108,5 @@ Webcam (Python sidecar) -> MediaPipe 33-keypoint pose + JPEG
 - Z-Anatomy assets are NOT included in this development branch. Source-specific licenses and mesh identities must be reviewed before redistribution or animation.
 
 **Scientific limitation:** pose estimation and reference anatomical registration are illustrations only. No part of this project sees into a person's body, measures individual organs, or makes a medical diagnosis.
+
+**Phase 4B tools:** `MagicMirror > Phase 4 > Calibrate Full Atlas Anchors` and `MagicMirror > Validation > Atlas Registration & Path Check`. These modify only motion metadata, never the original full skeletal FBX. Actual Unity Editor execution is pending.

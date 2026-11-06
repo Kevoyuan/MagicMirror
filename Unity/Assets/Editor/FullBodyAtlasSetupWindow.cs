@@ -190,11 +190,7 @@ namespace MagicMirror.Editor
 
         private static string RelativePath(Transform root, Transform target)
         {
-            var parts = new List<string>();
-            for (Transform t = target; t != root && t != null; t = t.parent)
-                parts.Add(t.name);
-            parts.Reverse();
-            return string.Join("/", parts);
+            return AtlasHierarchyPath.RelativePath(root, target);
         }
 
         // Hints only. Z-Anatomy uses multiple languages and coded labels;
