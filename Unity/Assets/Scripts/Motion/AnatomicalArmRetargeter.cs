@@ -81,6 +81,28 @@ namespace MagicMirror.Motion
                 source.FrameReceived += OnPoseFrame;
         }
 
+        public ArmSide Side { get { return side; } }
+
+        /// <summary>
+        /// Editor-controlled replacement of schematic proxy capsule roots
+        /// with six source-verified, independent anatomical bone prefabs.
+        /// Keep the existing sidecar, camera and arm-side connections.
+        /// </summary>
+        public void InstallAnatomicalMeshes(
+            Transform humerusRoot, BoneEndpoints humerusAnchors,
+            Transform radiusRoot, BoneEndpoints radiusAnchors,
+            Transform ulnaRoot, BoneEndpoints ulnaAnchors)
+        {
+            HideMeshes();
+            humerus = humerusRoot;
+            radius = radiusRoot;
+            ulna = ulnaRoot;
+            humerusEndpoints = humerusAnchors;
+            radiusEndpoints = radiusAnchors;
+            ulnaEndpoints = ulnaAnchors;
+            schematicForearmSeparation = 0f; // True bone geometry, never proxy offsets.
+        }
+
         private void OnEnable()
         {
             if (source != null) source.FrameReceived += OnPoseFrame;
