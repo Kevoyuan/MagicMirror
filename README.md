@@ -1,3 +1,7 @@
+> **MagicMirror 2.0 architecture (2026-11-06): MediaPipe Tasks is the ONE supported pose engine.** The old `OpenPosePlugin/` and individual-bone FBX extraction are historical references, not setup requirements for 2.0. Follow the intact Z-Anatomy atlas approach. Current code is **not** yet verified in the Unity Editor or against a physical webcam.
+>
+> **Start here:** [Product vision](Docs/PRODUCT_VISION.md) · [ADR-001](Docs/ADR-001_MEDIAPIPE_ONLY.md) · [Architecture](Docs/ARCHITECTURE.md) · [PoseFrame contract](Docs/POSE_FRAME_CONTRACT.md) · [Roadmap](Docs/ROADMAP.md) · [Unity runtime worksheet](Docs/UNITY_RUNTIME_VALIDATION.md)
+
 # MagicMirror 2.0 — Interactive Anatomical AR Mirror
 
 **Vision:** Explore human anatomy by moving your own body in front of an ordinary webcam.
