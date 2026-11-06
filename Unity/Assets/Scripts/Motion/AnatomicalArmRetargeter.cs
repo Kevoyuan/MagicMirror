@@ -5,16 +5,15 @@ using UnityEngine;
 namespace MagicMirror.Motion
 {
     /// <summary>
-    /// Optional Phase 2 anatomical mesh retargeter.
+    /// Maps 2D shoulder/elbow/wrist observations onto calibrated anatomical
+    /// mesh endpoints on a constant-depth CAMERA-FACING PLANE.
     ///
-    /// Imports are NOT bundled. Assign separate humerus/radius/ulna mesh
-    /// Transforms and manually identified endpoints in each mesh's LOCAL
-    /// coordinates. A single RGB camera gives an approximate 2D projection,
-    /// so bones are placed at a user-adjustable constant camera depth.
+    /// Important: bones are intentionally placed in SOURCE frame coordinates.
+    /// The webcam RawImage and anatomy RenderTexture RawImage share exactly
+    /// the same horizontal UV flip in ArmXRayCompositor. Never flip twice.
     ///
-    /// This component ONLY sets mesh transforms. A dedicated transparent
-    /// anatomy rendering/compositing pass is required in Phase 3 to draw
-    /// these meshes OVER the screen-space webcam background.
+    /// With one RGB camera this is an estimated 2D AR illustration, not 3D
+    /// reconstruction of a person's internal anatomy.
     /// </summary>
     public sealed class AnatomicalArmRetargeter : MonoBehaviour
     {
@@ -23,17 +22,30 @@ namespace MagicMirror.Motion
         {
             public Vector3 localStart;
             public Vector3 localEnd;
+
+            public static BoneEndpoints UnitY
+            {
+                get
+                {
+                    return new BoneEndpoints
+                    {
+                        localStart = new Vector3(0f, -1f, 0f),
+                        localEnd = new Vector3(0f, 1f, 0f)
+                    };
+                }
+            }
         }
 
         [SerializeField] private PoseStreamReceiver source;
-        [SerializeField] private RectTransform videoRect;
         [SerializeField] private Camera projectionCamera;
         [SerializeField] private ArmSide side = ArmSide.Right;
-        [SerializeField, Min(0.1f)] private float estimatedCameraDepthMeters = 2.0f;
-        [SerializeField, Range(0f, 1f)] private float confidenceThreshold = 0.4f;
+        [SerializeField, Min(0.1f)] private float cameraDepth = 2.0f;
+        [SerializeField, Range(0f, 1f)] private float confidenceThreshold = 0.40f;
         [SerializeField] private float staleAfterSeconds = 0.75f;
+        [SerializeField, Range(0f, 0.2f)]
+        private float schematicForearmSeparation = 0f;
 
-        [Header("Assign individually imported Z-Anatomy mesh transforms")]
+        [Header("Independent mesh roots, with measured local endpoints")]
         [SerializeField] private Transform humerus;
         [SerializeField] private BoneEndpoints humerusEndpoints;
         [SerializeField] private Transform radius;
@@ -41,9 +53,33 @@ namespace MagicMirror.Motion
         [SerializeField] private Transform ulna;
         [SerializeField] private BoneEndpoints ulnaEndpoints;
 
-        private readonly Vector3[] rectCorners = new Vector3[4];
         private float lastPoseTime = -100f;
         private bool hasValidPose;
+
+        public void Configure(PoseStreamReceiver receiver, Camera camera,
+                              ArmSide armSide, Transform humerusRoot,
+                              Transform radiusRoot, Transform ulnaRoot,
+                              BoneEndpoints upperAnchors, BoneEndpoints radiusAnchors,
+                              BoneEndpoints ulnaAnchors,
+                              float proxyForearmSeparation = 0f)
+        {
+            if (Application.isPlaying && source != null)
+                source.FrameReceived -= OnPoseFrame;
+
+            source = receiver;
+            projectionCamera = camera;
+            side = armSide;
+            humerus = humerusRoot;
+            radius = radiusRoot;
+            ulna = ulnaRoot;
+            humerusEndpoints = upperAnchors;
+            radiusEndpoints = radiusAnchors;
+            ulnaEndpoints = ulnaAnchors;
+            schematicForearmSeparation = Mathf.Clamp(proxyForearmSeparation, 0f, 0.2f);
+
+            if (Application.isPlaying && isActiveAndEnabled && source != null)
+                source.FrameReceived += OnPoseFrame;
+        }
 
         private void OnEnable()
         {
@@ -64,7 +100,7 @@ namespace MagicMirror.Motion
 
         private void OnPoseFrame(PoseFrame frame)
         {
-            if (videoRect == null || projectionCamera == null)
+            if (projectionCamera == null)
             {
                 HideMeshes();
                 return;
@@ -77,55 +113,60 @@ namespace MagicMirror.Motion
                 return;
             }
 
+            // Keep the camera aspect in sync BEFORE projecting the frame.
+            projectionCamera.aspect = (float)frame.width / frame.height;
+            Vector3 shoulderWorld = ToCameraPlane(pose.shoulder);
+            Vector3 elbowWorld = ToCameraPlane(pose.elbow);
+            Vector3 wristWorld = ToCameraPlane(pose.wrist);
+
+            // Optional lateral separation only for SCHEMATIC proxy bones.
+            // Imported anatomical bones should normally use zero here and
+            // their actual per-bone local mesh anchor positions.
+            Vector3 forearmDirection = wristWorld - elbowWorld;
+            Vector3 perpendicular = Vector3.Cross(
+                forearmDirection.normalized, projectionCamera.transform.forward);
+            Vector3 offset = perpendicular.normalized *
+                             (forearmDirection.magnitude * schematicForearmSeparation);
+
+            bool upperVisible = PlaceMesh(humerus, humerusEndpoints, shoulderWorld, elbowWorld);
+            bool radiusVisible = PlaceMesh(radius, radiusEndpoints,
+                                           elbowWorld + offset, wristWorld + offset);
+            bool ulnaVisible = PlaceMesh(ulna, ulnaEndpoints,
+                                         elbowWorld - offset, wristWorld - offset);
+
+            hasValidPose = upperVisible || radiusVisible || ulnaVisible;
             lastPoseTime = Time.realtimeSinceStartup;
-            // For the current sidecar, mirrored=false and Unity mirrors UI.
-            // If the source eventually changes, preserve coherent geometry.
-            bool flipX = !frame.mirrored;
-            Vector3 shoulderWorld = ToCameraSpace(pose.shoulder, flipX);
-            Vector3 elbowWorld = ToCameraSpace(pose.elbow, flipX);
-            Vector3 wristWorld = ToCameraSpace(pose.wrist, flipX);
-
-            bool upper = PlaceMesh(humerus, humerusEndpoints, shoulderWorld, elbowWorld);
-            bool radial = PlaceMesh(radius, radiusEndpoints, elbowWorld, wristWorld);
-            bool ulnar = PlaceMesh(ulna, ulnaEndpoints, elbowWorld, wristWorld);
-            hasValidPose = upper || radial || ulnar;
         }
 
-        private Vector3 ToCameraSpace(Vector2 sourceNormalized, bool flipX)
+        private Vector3 ToCameraPlane(Vector2 sourceNormalized)
         {
-            // ScreenSpaceOverlay Canvas: world corners correspond to UI
-            // screen positions. Future camera calibration replaces this
-            // approximate projection with an intrinsic-matrix transform.
-            videoRect.GetWorldCorners(rectCorners);
-            float x = flipX ? 1f - sourceNormalized.x : sourceNormalized.x;
-            float y = 1f - sourceNormalized.y;
-            var point = new Vector3(
-                Mathf.Lerp(rectCorners[0].x, rectCorners[2].x, x),
-                Mathf.Lerp(rectCorners[0].y, rectCorners[2].y, y),
-                estimatedCameraDepthMeters
-            );
-            return projectionCamera.ScreenToWorldPoint(point);
+            // Source image uses top-left origin; Unity viewport uses bottom-left.
+            // RawImage mirrors both camera pixels and anatomy RenderTexture
+            // together, so NO x reversal belongs in this function.
+            return projectionCamera.ViewportToWorldPoint(new Vector3(
+                sourceNormalized.x, 1f - sourceNormalized.y, cameraDepth));
         }
 
-        private static bool PlaceMesh(Transform mesh, BoneEndpoints anchors,
-                                      Vector3 startWorld, Vector3 endWorld)
+        private static bool PlaceMesh(Transform bone, BoneEndpoints anchors,
+                                      Vector3 start, Vector3 end)
         {
-            if (mesh == null) return false;
+            if (bone == null) return false;
+
             Vector3 localAxis = anchors.localEnd - anchors.localStart;
-            Vector3 target = endWorld - startWorld;
+            Vector3 target = end - start;
             if (localAxis.sqrMagnitude < 1e-8f || target.sqrMagnitude < 1e-8f)
             {
-                mesh.gameObject.SetActive(false);
+                bone.gameObject.SetActive(false);
                 return false;
             }
 
-            // Imported mesh parents must have identity/non-skewed scaling.
-            // Endpoint coordinates must be marked on the original mesh.
-            mesh.localScale = Vector3.one * (target.magnitude / localAxis.magnitude);
-            mesh.rotation = Quaternion.FromToRotation(localAxis, target);
-            // Align true local anchor to estimated body joint.
-            mesh.position = startWorld - mesh.TransformVector(anchors.localStart);
-            mesh.gameObject.SetActive(true);
+            // Mesh transform parents should have identity/non-skewed scaling.
+            // Local anchor coordinates must be manually verified for any
+            // imported Z-Anatomy bone mesh.
+            bone.localScale = Vector3.one * (target.magnitude / localAxis.magnitude);
+            bone.rotation = Quaternion.FromToRotation(localAxis, target.normalized);
+            bone.position = start - bone.TransformVector(anchors.localStart);
+            bone.gameObject.SetActive(true);
             return true;
         }
 
