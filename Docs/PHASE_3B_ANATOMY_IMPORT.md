@@ -1,3 +1,5 @@
+> **DEPRECATED / historical experiment:** This document describes a six-independent-bone FBX import method. It must not be used as the primary workflow for MagicMirror 2.0. Instead preserve and bind the **one complete** `SkeletalSystem100.fbx` per [Phase 4 whole-atlas workflow](PHASE_4_FULL_ATLAS.md) and [ADR-001](ADR-001_MEDIAPIPE_ONLY.md). The procedure below is archived to preserve the engineering history, not a current recommendation.
+
 # Phase 3B — Verified Z-Anatomy arm bone integration
 
 **Source tools are implemented, but the first genuine model import and Unity runtime animation remain unverified.** This is a human-controlled asset mapping path—not automatic bone detection.
