@@ -64,7 +64,8 @@ namespace MagicMirror.Motion
             result = default(BodySegment2D);
             if (frame == null || !frame.IsValid) return false;
 
-            Vector2 start, end;
+            // Short-circuit joint tests must leave both locals definitely assigned.
+            Vector2 start = Vector2.zero, end = Vector2.zero;
             bool ok;
             switch (segment)
             {

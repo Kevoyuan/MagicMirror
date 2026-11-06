@@ -22,6 +22,10 @@ MagicMirror 2.0 is a new Unity-based anatomical *illustration* prototype. The in
 | Phase 4 intact full-body atlas retargeter | Added | Unity Editor and real FBX pending |
 | Full FBX hierarchy inventory/profile wizard | Added | Editor and asset review pending |
 | Full-body schematic test scene generator | Added | Unity Editor pending |
+| Full-body motion smoothing, dropout hold and outlier gating | Added | Unity self-check pending |
+| Atlas hierarchy overlap/missing-path validation | Added | Unity self-check pending |
+| Full / Upper / Arms / Legs focus modes | Added | Unity AR scene pending |
+| Four deterministic synthetic movement scenarios | Added | Python CI tests |
 | Z-Anatomy FBX metadata inventory tooling | Added | Python name-hint tests; Blender import pending |
 | Actual anatomical FBX bones + accurate calibration | **Not done** | Not applicable |
 
@@ -45,6 +49,8 @@ Choose:
 6. Adjust **BONE OPACITY** slider to test AR alpha compositing.
 
 The demo preview has a BLACK background because it deliberately does not stream a synthetic camera image. To display real video, install the MediaPipe sidecar dependencies and obtain the Google-hosted pose model separately, as documented in `Docs/PHASE_1_SETUP.md`.
+
+**Phase 4 test scenarios:** run `python3 -m Tools.pose_sidecar.main --demo --demo-scenario walk` (or `wave`, `squat`, `dropout`). The Unity Editor menu `MagicMirror > Validation > Full Body Stability & Hierarchy Self Check` exercises pose smoothing and source hierarchy guards without any camera or real atlas. This Editor test is **not yet executed**.
 
 **Preferred model workflow:** Import ONE original full `SkeletalSystem100.fbx`; preserve all anatomical positions and source child objects. Use `MagicMirror > Phase 4 > Full Atlas Setup` to create a non-destructive motion profile and an FBX hierarchy report. **No individual bone FBX extraction is required.** See `Docs/PHASE_4_FULL_ATLAS.md`.
 
@@ -75,7 +81,7 @@ Webcam (Python sidecar) -> MediaPipe 33-keypoint pose + JPEG
 - `Docs/PHASE_3_AR_COMPOSITING.md` — current compositing stage, coordinate contract and model workflow
 - `Docs/PHASE_3_TEST_CASES.md` — manual acceptance tests
 - `Docs/PHASE_3B_ANATOMY_IMPORT.md` — previous six-bone mapping experiment (not preferred for the full model)
-- `Docs/PHASE_4_FULL_ATLAS.md` — preferred intact-FBX full-body retargeting and setup
+- `Docs/PHASE_4_FULL_ATLAS.md` — preferred intact-FBX full-body retargeting and setup; now includes stability, focus modes and regression cases
 - `Docs/ASSETS_AND_LICENSES.md` — third-party provenance and licensing
 - `Docs/LEGACY_README_2023.md` — original project's README, preserved for reference
 

@@ -37,6 +37,11 @@ jobs:
               "existing AR compositor reused": "Phase3XRaySceneBuilder" in scene,
               "body pose solver": "TrySegment" in (base / "Scripts/Motion/FullBodyPoseMath.cs").read_text(),
               "schematic demo": "Create Full Body Schematic Demo" in scene,
+              "filter module": "dropoutGraceSeconds" in (base / "Scripts/Motion/FullBodyPoseSmoother.cs").read_text(),
+              "smoother in retargeter": "poseSmoother.TrySegment" in runtime and "poseSmoother.TryShoulders" in runtime,
+              "fail-closed hierarchy": "ValidateHierarchy" in runtime and "Overlapping atlas subtree" in profile,
+              "focus rendering modes": "ApplyViewMode" in runtime and "ArmsOnly" in runtime,
+              "editor smoke checks": (base / "Editor/FullBodyStabilitySelfCheck.cs").exists(),
           }
           for name, ok in required.items():
               print(name, "OK" if ok else "MISSING")
