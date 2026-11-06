@@ -38,6 +38,21 @@ python3 -m Tools.pose_sidecar.main --demo-video --demo-scenario dropout
 
 Stop the sidecar and ensure the debug overlay clears after ~0.75 s instead of retaining stale dots/video. Restart it and ensure frame 0 from the new connection is accepted. Switch to original `--demo` and confirm it displays black video (not the prior synthetic image). Finally test a **real** webcam using `--model-profile lite` and camera setup in `Docs/PHASE_1_SETUP.md`.
 
+## Offline producer-to-TCP integration regression
+
+`Tools/pose_sidecar/tests/test_sidecar_integration.py` starts the **real Python
+sidecar as a subprocess**, reads successive framed packets through a localhost
+TCP client, and verifies the 33-point schema, monotonic frame IDs, timestamp
+association and reconnection frame reset. The optional `--demo-video` variant
+tests actual JPEG packet bytes; it requires only OpenCV/NumPy, not MediaPipe.
+
+```bash
+python3 -m unittest Tools.pose_sidecar.tests.test_sidecar_integration -v
+```
+
+The GitHub pose-sidecar workflow runs both dependency-free and OpenCV-backed
+variants. This checks real Python transport behavior, **not Unity rendering**.
+
 ## Limits / next gate
 
 - Source image landmarks are `x` left-to-right and `y` top-to-bottom before Unity mirror transform. The test does not prove camera handedness on specific webcam hardware.
