@@ -36,6 +36,12 @@ namespace MagicMirror.Tracking
                 return false;
             }
 
+            if (lastSessionId >= 0 && sessionId < lastSessionId)
+            {
+                RejectedCount++;
+                return false; // never resurrect a previous TCP session
+            }
+
             if (sessionId != lastSessionId)
             {
                 // The producer recreates the source after Unity disconnects.
