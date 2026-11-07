@@ -1,5 +1,9 @@
 name: Foundation and standalone repository checks
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     paths:
@@ -44,10 +48,59 @@ jobs:
         run: |
           python Tools/ci/check_mediapipe_only.py
           python Tools/ci/check_clean_repo.py
+      - name: Python syntax
+        run: python -m compileall -q Tools/anatomy_tools
+      - name: Name hint tests (stdlib)
+        run: python -m unittest discover -s Tools/anatomy_tools/tests -v
+      - name: Mapping JSON shape
+        run: |
+          python -m json.tool Assets-Manifest/arm_bone_mapping.template.json >/dev/null
+          python - <<'PY'
+          import json
+          with open("Assets-Manifest/arm_bone_mapping.template.json") as f:
+              data = json.load(f)
+          assert len(data["bones"]) == 6
+          assert all(not x["verified"] and x["localStart"] is None
+                     and x["localEnd"] is None for x in data["bones"])
+          print("Unverified anchors correctly remain unset.")
+          PY
+      - name: Check non-destructive whole-atlas source architecture
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          base = Path("Unity/Assets")
+          profile = (base / "Scripts/Anatomy/FullBodyAtlasProfile.cs").read_text()
+          runtime = (base / "Scripts/Motion/FullBodyAtlasRetargeter.cs").read_text()
+          scene = (base / "Editor/Phase4FullBodySceneBuilder.cs").read_text()
+          setup = (base / "Editor/FullBodyAtlasSetupWindow.cs").read_text()
+          required = {
+              "one full prefab": "wholeSkeletonPrefab" in profile and "Instantiate(profile.wholeSkeletonPrefab" in runtime,
+              "rest pose preserved": "neutralAtlasPosition" in runtime and "originalLocalRotation" in runtime,
+              "hierarchy paths retained": "rendererRootPaths" in runtime and "RelativePath(" in setup,
+              "existing AR compositor reused": "Phase3XRaySceneBuilder" in scene,
+              "body pose solver": "TrySegment" in (base / "Scripts/Motion/FullBodyPoseMath.cs").read_text(),
+              "schematic demo": "Create Full Body Schematic Demo" in scene,
+              "shoulder registration": "AtlasRegistrationMath.TrySolve" in runtime,
+              "safe hierarchy resolver": "AtlasHierarchyPath.TryResolve" in runtime and "AtlasHierarchyPath.TryResolve" in profile,
+              "indexed paths in UI": "AtlasHierarchyPath.RelativePath" in setup,
+              "visual anchor editing": (base / "Editor/FullBodyAtlasCalibrationWindow.cs").exists(),
+              "registration math self-check": (base / "Editor/AtlasRegistrationSelfCheck.cs").exists(),
+              "filter module": "dropoutGraceSeconds" in (base / "Scripts/Motion/FullBodyPoseSmoother.cs").read_text(),
+              "smoother in retargeter": "poseSmoother.TrySegment" in runtime and "poseSmoother.TryShoulders" in runtime,
+              "fail-closed hierarchy": "ValidateHierarchy" in runtime and "Overlapping atlas subtree" in profile,
+              "focus rendering modes": "ApplyViewMode" in runtime and "ArmsOnly" in runtime,
+              "editor smoke checks": (base / "Editor/FullBodyStabilitySelfCheck.cs").exists(),
+          }
+          for name, ok in required.items():
+              print(name, "OK" if ok else "MISSING")
+          assert all(required.values())
+          print("Static source contracts only — NOT Unity compile/runtime tests.")
+          PY
       - name: Scope disclaimer
         run: echo 'Static source hygiene only. No Unity Editor or webcam validation occurs here.'
 
   clean-export-smoke:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
